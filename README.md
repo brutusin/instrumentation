@@ -45,7 +45,7 @@ public Object foo(Object bar){
 allowing your custom listener to be notified.
 
 ##Maven dependency 
-This library is meant to be used by a java web module. If you are using maven, add this dependency to your war `pom.xml`:
+
 ```xml
 <dependency>
     <groupId>org.brutusin</groupId>
