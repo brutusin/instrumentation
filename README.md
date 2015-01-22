@@ -4,6 +4,7 @@ An extensible java agent framework that instruments (modifies the bytecode at cl
 **Table of Contents**
 - [org.brutusin:instrumentation](#orgbrutusininstrumentation)
 	- [How it works](#how-it-works)
+        - [Maven dependency](#maven-dependency)
 	- [Example](#example)
 		- [Implementation](#implementation)
 		- [Packaging](#packaging)
@@ -43,6 +44,17 @@ public Object foo(Object bar){
 
 allowing your custom listener to be notified.
 
+##Maven dependency 
+This library is meant to be used by a java web module. If you are using maven, add this dependency to your war `pom.xml`:
+```xml
+<dependency>
+    <groupId>org.brutusin</groupId>
+    <artifactId>instrumentation</artifactId>
+</dependency>
+```
+Click [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.brutusin%22%20a%3A%22instrumentation%22) to see the last available version released to the Maven Central Repository.
+
+If you are not using maven and need help you can ask [here](https://github.com/brutusin/instrumentation/issues).
 
 ##Example
 *See [logging-instrumentation](https://github.com/brutusin/logging-instrumentation) for a complete working example.*
