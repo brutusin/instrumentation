@@ -11,6 +11,7 @@ An extensible java agent framework that instruments (modifies the bytecode at cl
 	- [Main stack](#main-stack)
 	- [Brutusin dependent modules](#brutusin-dependent-modules)
 	- [Support, bugs and requests](#support-bugs-and-requests)
+	- [Authors](#authors)
 	- [License](#license)
 	
 ##How it works
@@ -111,7 +112,14 @@ This module could not be possible without:
 ## Support, bugs and requests
 https://github.com/brutusin/instrumentation/issues
 
+## Authors
+
+- Ignacio del Valle Alles (<https://github.com/idelvall/>)
+
+Contributions are always welcome and greatly appreciated!
+
 ##License
 Apache License, Version 2.0
 http://www.apache.org/licenses/LICENSE-2.0
+
 
