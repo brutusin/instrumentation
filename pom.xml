@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.brutusin</groupId>
+        <artifactId>brutusin</artifactId>
+        <version>1.0.1</version>
+    </parent>
+    <groupId>org.brutusin</groupId>
+    <artifactId>instrumentation</artifactId>
+    <version>1.0.0</version>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Extensible java agent framework to instrument programs running on the JVM</description>
+    <url>https://github.com/brutusin/instrumentation</url>
+    
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/brutusin/instrumentation/issues</url>
+    </issueManagement>
+    
+    <ciManagement>
+        <system>travis-ci</system>
+        <url>https://travis-ci.org/brutusin/instrumentation</url>
+    </ciManagement>
+    
+    <scm>
+        <url>https://github.com/brutusin/instrumentation</url>
+        <connection>scm:git:https://github.com/brutusin/instrumentation.git</connection>
+        <developerConnection>scm:git:https://github.com/brutusin/instrumentation.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>   
+        </dependency>
+        <dependency>
+            <groupId>org.brutusin</groupId>
+            <artifactId>commons</artifactId>
+            <version>1.0.0</version>
+            <scope>test</scope>   
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-all</artifactId>
+            <version>5.0.3</version>
+        </dependency>
+    </dependencies>
+</project>
