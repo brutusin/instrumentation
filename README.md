@@ -1,4 +1,4 @@
-#org.brutusin:instrumentation
+#org.brutusin:instrumentation [![Build Status](https://api.travis-ci.org/brutusin/instrumentation.svg?branch=master)](https://travis-ci.org/brutusin/instrumentation)
 An extensible java agent framework that instruments (modifies the bytecode at class load time) programs running on the JVM, with the purpose of capturing method invocation events (start, finish, errors ...) and notifying custom listeners.
 
 **Table of Contents**
@@ -90,7 +90,7 @@ public class MyInterceptor extends Interceptor {
 }
 ```
 ###Packaging
-Create a [fat-jar](http://maven.apache.org/plugins/maven-assembly-plugin/descriptor-refs.html#jar-with-dependencies)  with the previous class and its dependencies. Add the following attribute to  the manifest of the agent JAR:
+Create a [fat-jar](http://maven.apache.org/plugins/maven-assembly-plugin/descriptor-refs.html#jar-with-dependencies) with the previous class and its dependencies. Add the following attribute to  the manifest of the agent JAR:
 ```
 Premain-Class: org.brutusin.instrumentation.Agent
 ```
