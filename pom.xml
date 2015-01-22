@@ -29,6 +29,7 @@
         <developerConnection>scm:git:https://github.com/brutusin/instrumentation.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+    
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
