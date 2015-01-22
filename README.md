@@ -4,7 +4,7 @@ An extensible java agent framework that instruments (modifies the bytecode at cl
 **Table of Contents**
 - [org.brutusin:instrumentation](#orgbrutusininstrumentation)
 	- [How it works](#how-it-works)
-        - [Maven dependency](#maven-dependency)
+	- [Maven dependency](#maven-dependency)
 	- [Example](#example)
 		- [Implementation](#implementation)
 		- [Packaging](#packaging)
