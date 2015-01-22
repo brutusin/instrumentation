@@ -3,17 +3,17 @@ An extensible java agent framework that instruments (modifies the bytecode at cl
 
 **Table of Contents**
 - [org.brutusin:instrumentation](#orgbrutusininstrumentation)
-	- [How it works](#how-it-works)
-	- [Maven dependency](#maven-dependency)
-	- [Example](#example)
-		- [Implementation](#implementation)
-		- [Packaging](#packaging)
-		- [JRE launching](#jre-launching)
-	- [Main stack](#main-stack)
-	- [Brutusin dependent modules](#brutusin-dependent-modules)
-	- [Support, bugs and requests](#support-bugs-and-requests)
-	- [Authors](#authors)
-	- [License](#license)
+  - [How it works](#how-it-works)
+  - [Maven dependency](#maven-dependency)
+  - [Example](#example)
+    - [Implementation](#implementation)
+    - [Packaging](#packaging)
+    - [JRE launching](#jre-launching)
+    - [Main stack](#main-stack)
+    - [Brutusin dependent modules](#brutusin-dependent-modules)
+    - [Support, bugs and requests](#support-bugs-and-requests)
+    - [Authors](#authors)
+    - [License](#license)
 	
 ##How it works
 The [java instrumentation package](http://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) introduced in JDK1.5, provides a simple way to transform java-class definition at load time, consisting basically in a `byte[]` to `byte[]` transformation, by the so called "java agents".
