@@ -52,7 +52,7 @@ allowing your custom listener to be notified.
     <artifactId>instrumentation</artifactId>
 </dependency>
 ```
-Click [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.brutusin%22%20a%3A%22instrumentation%22) to see the last available version released to the Maven Central Repository.
+Click [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.brutusin%22%20a%3A%22instrumentation%22) to see the latest available version released to the Maven Central Repository.
 
 If you are not using maven and need help you can ask [here](https://github.com/brutusin/instrumentation/issues).
 
