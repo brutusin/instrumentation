@@ -44,7 +44,7 @@ allowing your custom listener to be notified.
 
 
 ##Example
-*See [logging-instrumentation](../../../tree/master/logging-instrumentation) for a complete working example.*
+*See [logging-instrumentation](https://github.com/brutusin/logging-instrumentation) for a complete working example.*
 ###Implementation
 Create the following listener implementation:
 
@@ -106,10 +106,10 @@ This module could not be possible without:
 * [org.ow2.asm:asm-all](http://asm.ow2.org/)
 
 ## Brutusin dependent modules
-* [org.brutusin:logging-instrumentation](../../../tree/master/logging-instrumentation)
+* [org.brutusin:logging-instrumentation](https://github.com/brutusin/logging-instrumentation)
 
 ## Support, bugs and requests
-https://github.com/brutusin/repository/issues
+https://github.com/brutusin/instrumentation/issues
 
 ##License
 Apache License, Version 2.0
