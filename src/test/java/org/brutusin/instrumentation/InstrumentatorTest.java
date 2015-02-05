@@ -142,7 +142,6 @@ public class InstrumentatorTest {
         if (assertionBean.getValue() != null) {
             throw assertionBean.getValue();
         }
-        assertNotNull(thBean.getValue());
         assertTrue(thBean.getValue() instanceof RuntimeException && thBean.getValue().getMessage().equals(SimpleClass.GREETING));
     }
 
