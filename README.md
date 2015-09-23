@@ -16,7 +16,7 @@ An extensible java agent framework that instruments programs running on the JVM 
     - [License](#license)
 	
 ##How it works
-The [java instrumentation package](http://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) introduced in JDK1.5, provides a simple way to transform java-class definition at load time, consisting basically in a `byte[]` to `byte[]` transformation, by the so called "java agents".
+The [java instrumentation package](http://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) introduced in JDK1.5, provides a simple way to transform java-class definition at loading time, consisting basically in a `byte[]` to `byte[]` transformation, by the so called "java agents".
 
 This module provides an agent ([org.brutusin.instrumentation.Agent](src/main/java/org/brutusin/instrumentation/Agent.java)) that creates an execution listener instance (from the name of a concrete class extending [org.brutusin.instrumentation.Interceptor](src/main/java/org/brutusin/instrumentation/Interceptor.java) passed from the JVM agent arguments) and, making use of the [ASM library](http://asm.ow2.org/), introduces a series of instructions in the method definitions of the classes to be loaded (classes and methods can be skipped) to notify these execution events to the listener.
 
