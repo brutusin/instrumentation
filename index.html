@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Instrumentation by brutusin</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/brutusin/instrumentation">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/brutusin/instrumentation/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/brutusin/instrumentation/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Instrumentation</h1>
+          <p>An extensible java agent framework that instruments (modifies the bytecode at class loading time) programs running on the JVM, with the purpose of capturing method invocation events (start, finish, errors ...) and notifying custom listeners.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/brutusin">brutusin</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a id="orgbrutusininstrumentation--" class="anchor" href="#orgbrutusininstrumentation--" aria-hidden="true"><span class="octicon octicon-link"></span></a>org.brutusin:instrumentation <a href="https://travis-ci.org/brutusin/instrumentation"><img src="https://api.travis-ci.org/brutusin/instrumentation.svg?branch=master" alt="Build Status"></a> <a href="https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/"><img src="https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/badge.svg" alt="Maven Central Latest Version"></a>
+</h1>
+
+<p>An extensible java agent framework that instruments programs running on the JVM (modifying the bytecode at class loading time), with the purpose of capturing method invocation events (start, finish, errors ...) and notifying custom listeners.</p>
+
+<p><strong>Table of Contents</strong></p>
+
+<ul>
+<li>
+<a href="#orgbrutusininstrumentation">org.brutusin:instrumentation</a>
+
+<ul>
+<li><a href="#how-it-works">How it works</a></li>
+<li><a href="#maven-dependency">Maven dependency</a></li>
+<li>
+<a href="#example">Example</a>
+
+<ul>
+<li><a href="#implementation">Implementation</a></li>
+<li><a href="#packaging">Packaging</a></li>
+<li><a href="#jre-launching">JRE launching</a></li>
+<li><a href="#main-stack">Main stack</a></li>
+<li><a href="#brutusin-dependent-modules">Brutusin dependent modules</a></li>
+<li><a href="#support-bugs-and-requests">Support, bugs and requests</a></li>
+<li><a href="#authors">Authors</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h2>
+<a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span class="octicon octicon-link"></span></a>How it works</h2>
+
+<p>The <a href="http://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html">java instrumentation package</a> introduced in JDK1.5, provides a simple way to transform java-class definition at loading time, consisting basically in a <code>byte[]</code> to <code>byte[]</code> transformation, by the so called "java agents".</p>
+
+<p>This module provides an agent (<a href="src/main/java/org/brutusin/instrumentation/Agent.java">org.brutusin.instrumentation.Agent</a>) that creates an execution listener instance (from the name of a concrete class extending <a href="src/main/java/org/brutusin/instrumentation/Interceptor.java">org.brutusin.instrumentation.Interceptor</a> passed from the JVM agent arguments) and, making use of the <a href="http://asm.ow2.org/">ASM library</a>, introduces a series of instructions in the method definitions of the classes to be loaded (classes and methods can be skipped) to notify these execution events to the listener.</p>
+
+<p>From a simplified point of view, the dynamic transformation turns a method like this: </p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">public</span> <span class="pl-smi">Object</span> foo(<span class="pl-smi">Object</span> bar){
+    <span class="pl-k">return</span> <span class="pl-k">new</span> <span class="pl-smi">Object</span>();
+}</pre></div>
+
+<p>into that:</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">public</span> <span class="pl-smi">Object</span> foo(<span class="pl-smi">Object</span> bar){
+    onStart(bar);
+    <span class="pl-k">try</span>{
+        <span class="pl-smi">Object</span> ret <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">Object</span>();
+        onFinished(ret);
+        <span class="pl-k">return</span> ret;
+    } <span class="pl-k">catch</span>(<span class="pl-smi">Throwable</span> th){
+        onThrowable(th);
+        <span class="pl-k">throw</span> th; <span class="pl-c">// at bytecode level this is legal</span>
+    }
+}</pre></div>
+
+<p>allowing your custom listener to be notified.</p>
+
+<h2>
+<a id="maven-dependency" class="anchor" href="#maven-dependency" aria-hidden="true"><span class="octicon octicon-link"></span></a>Maven dependency</h2>
+
+<div class="highlight highlight-text-xml"><pre>&lt;<span class="pl-ent">dependency</span>&gt;
+    &lt;<span class="pl-ent">groupId</span>&gt;org.brutusin&lt;/<span class="pl-ent">groupId</span>&gt;
+    &lt;<span class="pl-ent">artifactId</span>&gt;instrumentation&lt;/<span class="pl-ent">artifactId</span>&gt;
+&lt;/<span class="pl-ent">dependency</span>&gt;</pre></div>
+
+<p>Click <a href="http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.brutusin%22%20a%3A%22instrumentation%22">here</a> to see the latest available version released to the Maven Central Repository.</p>
+
+<p>If you are not using maven and need help you can ask <a href="https://github.com/brutusin/instrumentation/issues">here</a>.</p>
+
+<h2>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h2>
+
+<p><em>See <a href="https://github.com/brutusin/logging-instrumentation">logging-instrumentation</a> for a complete working example.</em></p>
+
+<h3>
+<a id="implementation" class="anchor" href="#implementation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Implementation</h3>
+
+<p>Create the following listener implementation:</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-k">package</span> <span class="pl-smi">mypackage</span>;
+
+<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">MyInterceptor</span> <span class="pl-k">extends</span> <span class="pl-e">Interceptor</span> {
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">init</span>(<span class="pl-smi">String</span> <span class="pl-v">arg</span>) {
+        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>Interceptor args: <span class="pl-pds">"</span></span> <span class="pl-k">+</span> arg);
+    }
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">boolean</span> <span class="pl-en">interceptClass</span>(<span class="pl-smi">String</span> <span class="pl-v">className</span>, <span class="pl-k">byte</span>[] <span class="pl-v">byteCode</span>) {
+        <span class="pl-k">return</span> <span class="pl-c1">true</span>; <span class="pl-c">// all classes can be intrumented</span>
+    }
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">public</span> <span class="pl-k">boolean</span> <span class="pl-en">interceptMethod</span>(<span class="pl-smi">ClassNode</span> <span class="pl-v">cn</span>,<span class="pl-smi">MethodNode</span> <span class="pl-v">mn</span>) {
+        <span class="pl-k">return</span> <span class="pl-c1">true</span>; <span class="pl-c">// all methods are instrumented</span>
+    }
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">protected</span> <span class="pl-k">void</span> <span class="pl-en">doOnStart</span>(<span class="pl-smi">Method</span> <span class="pl-v">m</span>, <span class="pl-k">Object</span>[] <span class="pl-v">arg</span>, <span class="pl-smi">String</span> <span class="pl-v">executionId</span>) {
+        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>doOnStart <span class="pl-pds">"</span></span> <span class="pl-k">+</span> m <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span> <span class="pl-k">+</span> executionId);
+    }
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">protected</span> <span class="pl-k">void</span> <span class="pl-en">doOnThrowableThrown</span>(<span class="pl-smi">Method</span> <span class="pl-v">m</span>, <span class="pl-smi">Throwable</span> <span class="pl-v">throwable</span>, <span class="pl-smi">String</span> <span class="pl-v">executionId</span>) {
+        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>doOnThrowableThrown <span class="pl-pds">"</span></span> <span class="pl-k">+</span> m <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span> <span class="pl-k">+</span> executionId);
+    }
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">protected</span> <span class="pl-k">void</span> <span class="pl-en">doOnThrowableUncatched</span>(<span class="pl-smi">Method</span> <span class="pl-v">m</span>, <span class="pl-smi">Throwable</span> <span class="pl-v">throwable</span>, <span class="pl-smi">String</span> <span class="pl-v">executionId</span>) {
+        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>doOnThrowableUncatched <span class="pl-pds">"</span></span> <span class="pl-k">+</span> m <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span> <span class="pl-k">+</span> executionId);
+    }
+
+    <span class="pl-k">@Override</span>
+    <span class="pl-k">protected</span> <span class="pl-k">void</span> <span class="pl-en">doOnFinish</span>(<span class="pl-smi">Method</span> <span class="pl-v">m</span>, <span class="pl-smi">Object</span> <span class="pl-v">result</span>, <span class="pl-smi">String</span> <span class="pl-v">executionId</span>) {
+        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>doOnFinish <span class="pl-pds">"</span></span> <span class="pl-k">+</span> m <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span> <span class="pl-k">+</span> executionId);
+    }
+}</pre></div>
+
+<h3>
+<a id="packaging" class="anchor" href="#packaging" aria-hidden="true"><span class="octicon octicon-link"></span></a>Packaging</h3>
+
+<p>Create a <a href="http://maven.apache.org/plugins/maven-assembly-plugin/descriptor-refs.html#jar-with-dependencies">fat-jar</a> with the previous class and its dependencies. Add the following attribute to  the manifest of the agent JAR:</p>
+
+<pre><code>Premain-Class: org.brutusin.instrumentation.Agent
+</code></pre>
+
+<p>Suppose this jar to be named <code>myagent.jar</code></p>
+
+<h3>
+<a id="jre-launching" class="anchor" href="#jre-launching" aria-hidden="true"><span class="octicon octicon-link"></span></a>JRE launching</h3>
+
+<p>Run (at least JRE 1.5) the desired java application with the following JVM options: (suppossing myagent.jar located in the working directory)</p>
+
+<pre><code>-javaagent:myagent.jar=mypackage.MyInterceptor;an_interceptor_optional_parameter
+</code></pre>
+
+<h2>
+<a id="main-stack" class="anchor" href="#main-stack" aria-hidden="true"><span class="octicon octicon-link"></span></a>Main stack</h2>
+
+<p>This module could not be possible without:</p>
+
+<ul>
+<li><a href="http://asm.ow2.org/">org.ow2.asm:asm-all</a></li>
+</ul>
+
+<h2>
+<a id="brutusin-dependent-modules" class="anchor" href="#brutusin-dependent-modules" aria-hidden="true"><span class="octicon octicon-link"></span></a>Brutusin dependent modules</h2>
+
+<ul>
+<li><a href="https://github.com/brutusin/logging-instrumentation">org.brutusin:logging-instrumentation</a></li>
+</ul>
+
+<h2>
+<a id="support-bugs-and-requests" class="anchor" href="#support-bugs-and-requests" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support, bugs and requests</h2>
+
+<p><a href="https://github.com/brutusin/instrumentation/issues">https://github.com/brutusin/instrumentation/issues</a></p>
+
+<h2>
+<a id="authors" class="anchor" href="#authors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors</h2>
+
+<ul>
+<li>Ignacio del Valle Alles (<a href="https://github.com/idelvall/">https://github.com/idelvall/</a>)</li>
+</ul>
+
+<p>Contributions are always welcome and greatly appreciated!</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Apache License, Version 2.0
+<a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
