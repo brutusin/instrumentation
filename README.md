@@ -30,15 +30,15 @@ public Object foo(Object bar){
 into that:
 ```java
 public Object foo(Object bar){
-	onStart(bar);
-	try{
-		Object ret = new Object();
-		onFinished(ret);
-		return ret;
-	} catch(Throwable th){
-		onThrowable(th);
-		throw th; // at bytecode level this is legal
-	}
+    onStart(bar);
+    try{
+        Object ret = new Object();
+        onFinished(ret);
+        return ret;
+    } catch(Throwable th){
+        onThrowable(th);
+        throw th; // at bytecode level this is legal
+    }
 }
 ```
 
@@ -68,7 +68,7 @@ public class MyInterceptor extends Interceptor {
 
     @Override
     public void init(String arg) {
-		System.out.println("Interceptor args: " + arg);
+        System.out.println("Interceptor args: " + arg);
     }
 
     @Override
