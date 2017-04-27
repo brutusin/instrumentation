@@ -77,7 +77,7 @@ public class MyInterceptor extends Interceptor {
     }
 
     @Override
-    public boolean interceptMethod(ClassNode cn,MethodNode mn) {
+    public boolean interceptMethod(ClassNode cn, MethodNode mn) {
         return true; // all methods are instrumented
     }
 
