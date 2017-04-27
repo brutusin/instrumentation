@@ -23,7 +23,7 @@ This module provides an agent ([org.brutusin.instrumentation.Agent](src/main/jav
 From a simplified point of view, the dynamic transformation turns a method like this: 
 ```java
 public Object foo(Object bar){
-	return new Object();
+    return new Object();
 }
 ```
 
