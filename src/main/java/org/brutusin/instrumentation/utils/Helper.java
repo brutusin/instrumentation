@@ -15,6 +15,8 @@
  */
 package org.brutusin.instrumentation.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -64,6 +66,10 @@ public class Helper {
 
     public static boolean isAbstract(MethodNode m) {
         return (m.access & Opcodes.ACC_ABSTRACT) != 0;
+    }
+    
+    public static boolean isNative(MethodNode m) {
+        return (m.access & Opcodes.ACC_NATIVE) != 0;
     }
 
     public static boolean isStatic(MethodNode m) {

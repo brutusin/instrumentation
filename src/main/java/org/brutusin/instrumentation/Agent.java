@@ -15,63 +15,39 @@
  */
 package org.brutusin.instrumentation;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.ProtectionDomain;
 
 public class Agent {
 
-    private static int counter;
-
     public static void premain(final String agentArgs, Instrumentation instrumentation) throws InstantiationException {
-        counter++;
-        final String callbackId = String.valueOf(counter);
         try {
             if (agentArgs == null) {
-                 throw new IllegalArgumentException("Agent argument is required of the form 'interceptor-class-name[;interceptor-custom-args]'");
+                throw new IllegalArgumentException("Agent argument is required of the form 'listener-class-name[:listener-custom-args];filter-class-name[:filter-custom-args]'");
             }
-            String[] tokens = agentArgs.split(";",2);
-            Class<?> clazz = Agent.class.getClassLoader().loadClass(tokens[0]);
-            final Interceptor interceptor = (Interceptor) clazz.newInstance();
+            String[] tokens = agentArgs.split(";", 2);
+            final Listener listener = (Listener)loadImpl(tokens[0]);
+            Callback.listener = listener;
+            Transformer transformer = Transformer.getInstance();
+            final Filter filter;
             if(tokens.length==2){
-                interceptor.init(tokens[1]);
-            } else {
-                interceptor.init(null);
+                filter = (Filter)loadImpl(tokens[1]);
+                transformer.setFilter(filter);
             }
-            Callback.registerCallback(callbackId, interceptor);
-            instrumentation.addTransformer(new ClassFileTransformer() {
-                public byte[] transform(final ClassLoader loader,
-                        final String className, final Class<?> classBeingRedefined,
-                        final ProtectionDomain protectionDomain,
-                        final byte[] classfileBuffer)
-                        throws IllegalClassFormatException {
-
-                    if (!isAncestor(Agent.class.getClassLoader(), loader)) {
-                        return classfileBuffer;
-                    }
-                    return AccessController.doPrivileged(new PrivilegedAction<byte[]>() {
-                        public byte[] run() {
-                            Instrumentator instrumentator = new Instrumentator(className, classfileBuffer, interceptor, callbackId);
-                                return instrumentator.modifyClass();
-                        }
-                    });
-                }
-            });
+            instrumentation.addTransformer(transformer);
         } catch (Throwable th) {
             th.printStackTrace(System.err);
         }
     }
-
-    private static boolean isAncestor(ClassLoader ancestor, ClassLoader cl) {
-        if (ancestor == null || cl == null) {
-            return false;
+    
+    private static Initializable loadImpl(String str) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        String[] tokens = str.split(":", 2);
+        Class<?> clazz = Agent.class.getClassLoader().loadClass(tokens[0]);
+        final Initializable ret = (Initializable) clazz.newInstance();
+        if (tokens.length == 2) {
+            ret.init(tokens[1]);
+        } else {
+            ret.init(null);
         }
-        if (ancestor.equals(cl)) {
-            return true;
-        }
-        return isAncestor(ancestor, cl.getParent());
+        return ret;
     }
 }
