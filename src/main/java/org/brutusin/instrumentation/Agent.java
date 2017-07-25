@@ -15,39 +15,32 @@
  */
 package org.brutusin.instrumentation;
 
-import org.brutusin.instrumentation.spi.impl.InstrumentationImpl;
+import java.lang.reflect.InvocationTargetException;
 import org.brutusin.instrumentation.spi.Instrumentation;
 import org.brutusin.instrumentation.spi.Plugin;
+import org.brutusin.instrumentation.spi.impl.InstrumentationImpl;
 
 public class Agent {
 
-    public static void premain(final String agentArgs, java.lang.instrument.Instrumentation javaInstrumentation) throws InstantiationException {
-        try {
-            if (agentArgs == null) {
-                throw new IllegalArgumentException("Agent argument is required of the form 'plugin-class-name[:plugin-custom-args];...'");
-            }
-            String[] tokens = agentArgs.split(";", 2);
-            Plugin[] plugins = new Plugin[tokens.length];
-            for (int i = 0; i < tokens.length; i++) {
-                plugins[i] = createPlugin(tokens[i], javaInstrumentation);
-            }
-            Transformer transformer = new Transformer(plugins, javaInstrumentation);
-            javaInstrumentation.addTransformer(transformer, javaInstrumentation.isRetransformClassesSupported());
-        } catch (Throwable th) {
-            th.printStackTrace(System.err);
+    public static void premain(final String agentArgs, java.lang.instrument.Instrumentation javaInstrumentation) throws Exception {
+        if (agentArgs == null) {
+            throw new IllegalArgumentException("Agent argument is required of the form 'plugin-class-name[:plugin-custom-args];...'");
         }
+        String[] tokens = agentArgs.split(";", 2);
+        Plugin[] plugins = new Plugin[tokens.length];
+        for (int i = 0; i < tokens.length; i++) {
+            plugins[i] = createPlugin(tokens[i], javaInstrumentation);
+        }
+        Transformer transformer = new Transformer(plugins, javaInstrumentation);
+        javaInstrumentation.addTransformer(transformer, javaInstrumentation.isRetransformClassesSupported());
     }
 
-    private static Plugin createPlugin(String str, java.lang.instrument.Instrumentation javaInstrumentation) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    private static Plugin createPlugin(String str, java.lang.instrument.Instrumentation javaInstrumentation) throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
         String[] tokens = str.split(":", 2);
-        Class<?> clazz = Agent.class.getClassLoader().loadClass(tokens[0]);
-        Plugin ret = (Plugin) clazz.newInstance();
         Instrumentation ins = new InstrumentationImpl(javaInstrumentation);
-        if (tokens.length == 2) {
-            ret.init(tokens[1], ins);
-        } else {
-            ret.init(null, ins);
-        }
+        Class<?> clazz = Agent.class.getClassLoader().loadClass(tokens[0]);
+        Plugin ret = (Plugin) clazz.getConstructor(Instrumentation.class).newInstance(ins);
+        ret.init(str);
         return ret;
     }
 }

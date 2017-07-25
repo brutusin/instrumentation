@@ -16,6 +16,7 @@ import org.brutusin.instrumentation.spi.Instrumentation;
 import org.brutusin.instrumentation.spi.Listener;
 import org.brutusin.instrumentation.spi.Plugin;
 import org.brutusin.instrumentation.spi.impl.AllFilterImpl;
+import org.brutusin.instrumentation.spi.impl.InstrumentationImpl;
 import org.brutusin.instrumentation.utils.Helper;
 
 /**
@@ -29,7 +30,7 @@ public class TestModified {
      */
     public static void main(String[] args) throws Throwable {
 
-        Plugin plugin = new Plugin() {
+        Plugin plugin = new Plugin(new InstrumentationImpl(null)) {
 
             ThreadLocal<LinkedList> tl = new ThreadLocal();
 
@@ -75,7 +76,7 @@ public class TestModified {
             }
 
             @Override
-            public void init(String s, Instrumentation ins) {
+            public void init(String s) {
             }
         };
         Callback.plugins = new Plugin[]{plugin};

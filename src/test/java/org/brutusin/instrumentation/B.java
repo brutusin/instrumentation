@@ -43,6 +43,8 @@ public class B extends A {
         if ((Math.abs(d1 - d2) <= delta)) {
             return false;
         }
+        A a = new A("nacho");
+        a.getName();
 
         return true;
     }

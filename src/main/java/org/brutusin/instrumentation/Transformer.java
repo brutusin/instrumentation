@@ -37,11 +37,9 @@ import org.objectweb.asm.tree.VarInsnNode;
 public class Transformer implements ClassFileTransformer {
 
     private final Plugin[] plugins;
-    private final InstrumentationImpl ins;
 
     public Transformer(Plugin[] plugins, java.lang.instrument.Instrumentation javaInstrumentation) {
         this.plugins = plugins;
-        this.ins = new InstrumentationImpl(javaInstrumentation);
         Callback.plugins = plugins;
     }
 
@@ -56,12 +54,12 @@ public class Transformer implements ClassFileTransformer {
             final byte[] classfileBuffer)
             throws IllegalClassFormatException {
 
-        ins.removeTransformedClass(className);
         LinkedList<Integer> pluginsInterceptingClass = new LinkedList<>();
         for (int i = 0; i < plugins.length; i++) {
             if (plugins[i].getFilter().instrumentClass(className, protectionDomain, loader)) {
                 pluginsInterceptingClass.add(i);
             }
+            ((InstrumentationImpl)(plugins[i].getInstrumentation())).removeTransformedClass(className);
         }
         if (pluginsInterceptingClass.isEmpty()) {
             return classfileBuffer;
@@ -73,8 +71,16 @@ public class Transformer implements ClassFileTransformer {
 
         List<MethodNode> methods = cn.methods;
         boolean transformed = false;
-        for (MethodNode node : methods) {
-            if (modifyMethod(cn, node, pluginsInterceptingClass) == true) {
+        for (MethodNode mn : methods) {
+            LinkedList<Integer> pluginsToUse = new LinkedList<>();
+            for (Integer i : pluginsInterceptingClass) {
+                if (plugins[i].getFilter().instrumentMethod(cn, mn)) {
+                    pluginsToUse.add(i);
+                    ((InstrumentationImpl)(plugins[i].getInstrumentation())).addTransformedClass(className);
+                }
+            }
+            if (!pluginsToUse.isEmpty()) {
+                modifyMethod(cn, mn, pluginsToUse);
                 transformed = true;
             }
         }
@@ -86,21 +92,10 @@ public class Transformer implements ClassFileTransformer {
 
         cn.accept(cw);
 
-        ins.addTransformedClass(className);
-
         return cw.toByteArray();
     }
 
-    private boolean modifyMethod(ClassNode cn, MethodNode mn, LinkedList<Integer> pluginsToConsider) {
-        LinkedList<Integer> pluginsToUse = new LinkedList<>();
-        for (Integer i : pluginsToConsider) {
-            if (plugins[i].getFilter().instrumentMethod(cn, mn)) {
-                pluginsToUse.add(i);
-            }
-        }
-        if (pluginsToUse.isEmpty()) {
-            return false;
-        }
+    private boolean modifyMethod(ClassNode cn, MethodNode mn, LinkedList<Integer> pluginsToUse) {
         int frameDataVarIndex = addTraceStart(cn, mn, pluginsToUse);
         addTraceReturn(mn, frameDataVarIndex, pluginsToUse);
 //        addTraceThrow();

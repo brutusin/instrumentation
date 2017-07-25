@@ -19,11 +19,12 @@ import org.brutusin.instrumentation.spi.Listener;
 import org.brutusin.instrumentation.runtime.FrameData;
 import java.io.InputStream;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.brutusin.instrumentation.spi.Filter;
-import org.brutusin.instrumentation.spi.Instrumentation;
 import org.brutusin.instrumentation.spi.Plugin;
 import org.brutusin.instrumentation.spi.impl.AllFilterImpl;
+import org.brutusin.instrumentation.spi.impl.InstrumentationImpl;
 import org.brutusin.instrumentation.spi.impl.VoidListener;
 import org.junit.Test;
 import org.objectweb.asm.tree.ClassNode;
@@ -38,7 +39,8 @@ public class InstrumentatorTest {
         InputStream is = clazz.getClassLoader().getResourceAsStream(resourceName);
         byte[] bytes = IOUtils.toByteArray(is);
         Transformer transformer = new Transformer(new Plugin[]{
-            new Plugin() {
+            new Plugin(new InstrumentationImpl(null)) {
+
                 @Override
                 public Filter getFilter() {
                     return new AllFilterImpl();
@@ -50,53 +52,56 @@ public class InstrumentatorTest {
                         @Override
                         public Object onStart(FrameData fd) {
                             System.out.println(fd.getClassName() + "." + fd.getMethodDescriptor());
+                            System.out.println(Arrays.toString(getInstrumentation().getTransformedClasses()));
                             return null;
                         }
                     };
                 }
 
                 @Override
-                public void init(String s, Instrumentation ins) {
+                public void init(String s) {
                 }
             },
-            new Plugin() {
-            @Override
-            public Filter getFilter() {
-                return new Filter() {
-                    @Override
-                    public void init(String param) {
-                    }
+            new Plugin(new InstrumentationImpl(null)) {
 
-                    @Override
-                    public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl) {
-                        return true;
-                    }
+                @Override
+                public Filter getFilter() {
+                    return new Filter() {
+                        @Override
+                        public void init(String param) {
+                        }
 
-                    @Override
-                    public boolean instrumentMethod(ClassNode classNode, MethodNode mn) {
-                        return mn.name.equals("doubleIsDifferent");
-                    }
-                };
-            }
+                        @Override
+                        public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl) {
+                            return true;
+                        }
 
-            @Override
-            public Listener getListener() {
-                return new VoidListener() {
-                    @Override
-                    public Object onStart(FrameData fd) {
-                        System.out.println("ahahahahaaa" + fd.getClassName() + "." + fd.getMethodDescriptor());
-                        return null;
-                    }
-                };
-            }
+                        @Override
+                        public boolean instrumentMethod(ClassNode classNode, MethodNode mn) {
+                            return mn.name.equals("doubleIsDifferent");
+                        }
+                    };
+                }
 
-            @Override
-            public void init(String s, Instrumentation ins) {
-            }
-        }}, null);
+                @Override
+                public Listener getListener() {
+                    return new VoidListener() {
+                        @Override
+                        public Object onStart(FrameData fd) {
+                            System.out.println("ahahahahaaa" + fd.getClassName() + "." + fd.getMethodDescriptor());
+                            System.out.println(Arrays.toString(getInstrumentation().getTransformedClasses()));
+                            return null;
+                        }
+                    };
+                }
+
+                @Override
+                public void init(String s) {
+                }
+            }}, null);
 
         byte[] newBytes = transformer.transform(clazz.getClassLoader(), className, clazz, clazz.getProtectionDomain(), bytes);
-       // Helper.viewByteCode(newBytes);
+        // Helper.viewByteCode(newBytes);
         ByteClassLoader cl = new ByteClassLoader();
         return cl.loadClass(className, newBytes);
     }
