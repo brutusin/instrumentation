@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.brutusin</groupId>
         <artifactId>brutusin</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.5</version>
     </parent>
     <groupId>org.brutusin</groupId>
     <artifactId>instrumentation</artifactId>
@@ -12,7 +12,10 @@
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Extensible java agent framework to instrument programs running on the JVM</description>
     <url>https://github.com/brutusin/instrumentation</url>
-    
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
     <issueManagement>
         <system>GitHub Issues</system>
         <url>https://github.com/brutusin/instrumentation/issues</url>

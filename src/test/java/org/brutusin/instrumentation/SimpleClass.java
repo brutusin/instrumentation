@@ -40,12 +40,6 @@ public class SimpleClass {
         return System.currentTimeMillis();
     }
 
-    public long getDateAsIntrumented(int a, Object b, Object c) {
-        FrameData fd = FrameData.getInstance(this, "aaa", "bbb", new Object[]{a, b, c});
-        Callback.onStart(fd);
-        return System.currentTimeMillis();
-    }
-
     public static long getStaticDate() {
         return System.currentTimeMillis();
     }

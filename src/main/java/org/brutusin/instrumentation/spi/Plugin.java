@@ -3,12 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.brutusin.instrumentation;
+package org.brutusin.instrumentation.spi;
 
 /**
  *
  * @author ignacio
  */
-public interface Initializable {
-    public void init(String s);
+public interface Plugin {
+
+    Filter getFilter();
+
+    Listener getListener();
+
+    void init(String s, Instrumentation ins);
 }

@@ -3,13 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.brutusin.instrumentation;
+package org.brutusin.instrumentation.spi.impl;
+
+import org.brutusin.instrumentation.spi.Instrumentation;
+import org.brutusin.instrumentation.spi.Listener;
+import org.brutusin.instrumentation.runtime.FrameData;
 
 /**
  *
  * @author ignacio
  */
 public class VoidListener implements Listener {
+
+    @Override
+    public void init(String s, Instrumentation bi) {
+    }
 
     @Override
     public Object onStart(FrameData fd) {
@@ -26,9 +34,5 @@ public class VoidListener implements Listener {
 
     @Override
     public void onBeforeThrown(Throwable th, FrameData fd) {
-    }
-
-    @Override
-    public void init(String s) {
     }
 }

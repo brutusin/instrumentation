@@ -3,9 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.brutusin.instrumentation;
+package org.brutusin.instrumentation.spi.impl;
 
+import org.brutusin.instrumentation.spi.Filter;
 import java.security.ProtectionDomain;
+import org.brutusin.instrumentation.Agent;
 import org.brutusin.instrumentation.utils.Helper;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;

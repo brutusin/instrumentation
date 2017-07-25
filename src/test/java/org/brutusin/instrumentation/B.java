@@ -5,6 +5,8 @@
  */
 package org.brutusin.instrumentation;
 
+import org.brutusin.instrumentation.runtime.Callback;
+import org.brutusin.instrumentation.runtime.FrameData;
 import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.brutusin.instrumentation.utils.Helper;
@@ -35,20 +37,6 @@ public class B extends A {
     }
 
     static public boolean doubleIsDifferent(double d1, double d2, double delta) {
-        if (Double.compare(d1, d2) == 0) {
-            return false;
-        }
-        if ((Math.abs(d1 - d2) <= delta)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    static public boolean doubleIsDifferentInstrumented(double d1, double d2, double delta) {
-        FrameData fd = FrameData.getInstance(null, "aaa", "bbb", new Object[]{d1, d2, delta});
-        Callback.onStart(fd);
-
         if (Double.compare(d1, d2) == 0) {
             return false;
         }
