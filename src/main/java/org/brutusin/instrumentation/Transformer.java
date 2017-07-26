@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.brutusin.instrumentation.runtime.Callback;
+import org.brutusin.instrumentation.spi.Instrumentation;
 import org.brutusin.instrumentation.utils.Helper;
 import org.brutusin.instrumentation.utils.TreeInstructions;
 import org.objectweb.asm.ClassReader;
@@ -37,9 +38,11 @@ import org.objectweb.asm.tree.VarInsnNode;
 public class Transformer implements ClassFileTransformer {
 
     private final Plugin[] plugins;
+    private final InstrumentationImpl[] instrumentations;
 
-    public Transformer(Plugin[] plugins, java.lang.instrument.Instrumentation javaInstrumentation) {
+    public Transformer(Plugin[] plugins, InstrumentationImpl[] instrumentations) {
         this.plugins = plugins;
+        this.instrumentations = instrumentations;
         Callback.plugins = plugins;
     }
 
@@ -59,7 +62,7 @@ public class Transformer implements ClassFileTransformer {
             if (plugins[i].getFilter().instrumentClass(className, protectionDomain, loader)) {
                 pluginsInterceptingClass.add(i);
             }
-            ((InstrumentationImpl)(plugins[i].getInstrumentation())).removeTransformedClass(className);
+            instrumentations[i].removeTransformedClass(className);
         }
         if (pluginsInterceptingClass.isEmpty()) {
             return classfileBuffer;
@@ -72,11 +75,14 @@ public class Transformer implements ClassFileTransformer {
         List<MethodNode> methods = cn.methods;
         boolean transformed = false;
         for (MethodNode mn : methods) {
+            if (Helper.isAbstract(mn) || Helper.isNative(mn)) {
+                continue;
+            }
             LinkedList<Integer> pluginsToUse = new LinkedList<>();
             for (Integer i : pluginsInterceptingClass) {
                 if (plugins[i].getFilter().instrumentMethod(cn, mn)) {
                     pluginsToUse.add(i);
-                    ((InstrumentationImpl)(plugins[i].getInstrumentation())).addTransformedClass(className);
+                    instrumentations[i].addTransformedClass(className);
                 }
             }
             if (!pluginsToUse.isEmpty()) {
@@ -129,7 +135,7 @@ public class Transformer implements ClassFileTransformer {
             il.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
                     "org/brutusin/instrumentation/runtime/Callback", "onStart",
                     "(Lorg/brutusin/instrumentation/runtime/FrameData;I)Ljava/lang/Object;", false));
-            
+
             il.add(new InsnNode(Opcodes.POP));
 
         }

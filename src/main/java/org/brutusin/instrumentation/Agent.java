@@ -28,19 +28,24 @@ public class Agent {
         }
         String[] tokens = agentArgs.split(";", 2);
         Plugin[] plugins = new Plugin[tokens.length];
+        InstrumentationImpl[] instrumentations = new InstrumentationImpl[tokens.length];
         for (int i = 0; i < tokens.length; i++) {
-            plugins[i] = createPlugin(tokens[i], javaInstrumentation);
+            instrumentations[i] = new InstrumentationImpl(javaInstrumentation);
+            plugins[i] = createPlugin(tokens[i], instrumentations[i]);
         }
-        Transformer transformer = new Transformer(plugins, javaInstrumentation);
+        Transformer transformer = new Transformer(plugins, instrumentations);
         javaInstrumentation.addTransformer(transformer, javaInstrumentation.isRetransformClassesSupported());
     }
 
-    private static Plugin createPlugin(String str, java.lang.instrument.Instrumentation javaInstrumentation) throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+    private static Plugin createPlugin(String str, InstrumentationImpl ins) throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
         String[] tokens = str.split(":", 2);
-        Instrumentation ins = new InstrumentationImpl(javaInstrumentation);
         Class<?> clazz = Agent.class.getClassLoader().loadClass(tokens[0]);
-        Plugin ret = (Plugin) clazz.getConstructor(Instrumentation.class).newInstance(ins);
-        ret.init(str);
+        Plugin ret = (Plugin) clazz.newInstance();
+        if (tokens.length > 1) {
+            ret.init(tokens[1], ins);
+        } else {
+            ret.init(null, ins);
+        }
         return ret;
     }
 }

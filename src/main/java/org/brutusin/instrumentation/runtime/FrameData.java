@@ -44,8 +44,17 @@ public final class FrameData {
     public Object[] getArgs() {
         return args;
     }
-    
-    private void dispose() {
 
+    public FrameData copy() {
+        FrameData fd = new FrameData();
+        fd.args = args;
+        fd.className = className;
+        fd.instance = instance;
+        fd.methodDescriptor = methodDescriptor;
+        return fd;
+    }
+
+    private void dispose() {
+        // have in mind copies instances no in the pool
     }
 }

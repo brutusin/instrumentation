@@ -30,7 +30,7 @@ public class TestModified {
      */
     public static void main(String[] args) throws Throwable {
 
-        Plugin plugin = new Plugin(new InstrumentationImpl(null)) {
+        Plugin plugin = new Plugin() {
 
             ThreadLocal<LinkedList> tl = new ThreadLocal();
 
@@ -46,9 +46,6 @@ public class TestModified {
             @Override
             public Listener getListener() {
                 return new Listener() {
-                    @Override
-                    public void init(String param, Instrumentation bi) {
-                    }
 
                     @Override
                     public Object onStart(FrameData fd) {
@@ -76,8 +73,9 @@ public class TestModified {
             }
 
             @Override
-            public void init(String s) {
+            public void init(String s, Instrumentation ins) {
             }
+
         };
         Callback.plugins = new Plugin[]{plugin};
         TestModified t = new TestModified();

@@ -15,8 +15,6 @@ import org.objectweb.asm.tree.MethodNode;
  */
 public interface Filter {
 
-    public void init(String param);
-
     public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl);
 
     public boolean instrumentMethod(ClassNode classNode, MethodNode mn);

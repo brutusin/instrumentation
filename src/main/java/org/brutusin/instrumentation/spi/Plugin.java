@@ -9,21 +9,11 @@ package org.brutusin.instrumentation.spi;
  *
  * @author ignacio
  */
-public abstract class Plugin {
+public interface Plugin {
 
-    private final Instrumentation instrumentation;
+    void init(String s, Instrumentation ins);
+    
+    Filter getFilter();
 
-    public Plugin(Instrumentation instrumentation) {
-        this.instrumentation = instrumentation;
-    }
-
-    public abstract Filter getFilter();
-
-    public abstract Listener getListener();
-
-    public abstract void init(String s);
-
-    public final Instrumentation getInstrumentation() {
-        return instrumentation;
-    }
+    Listener getListener();
 }

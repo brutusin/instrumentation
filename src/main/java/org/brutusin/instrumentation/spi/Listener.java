@@ -13,8 +13,6 @@ import org.brutusin.instrumentation.runtime.FrameData;
  */
 public interface Listener {
 
-    public void init(String param, Instrumentation bi);
-
     public Object onStart(FrameData fd);
 
     public void onFinishedReturn(Object ret, FrameData fd);

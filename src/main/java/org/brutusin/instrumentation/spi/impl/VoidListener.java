@@ -16,10 +16,6 @@ import org.brutusin.instrumentation.runtime.FrameData;
 public class VoidListener implements Listener {
 
     @Override
-    public void init(String s, Instrumentation bi) {
-    }
-
-    @Override
     public Object onStart(FrameData fd) {
         return null;
     }
