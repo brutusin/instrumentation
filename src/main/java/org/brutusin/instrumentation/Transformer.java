@@ -198,7 +198,9 @@ public class Transformer implements ClassFileTransformer {
 
     private InsnList getVoidReturnTraceInstructions(int frameDataVarIndex, LinkedList<Integer> pluginsToUse) {
         InsnList il = new InsnList();
-        for (Integer index : pluginsToUse) {
+        Iterator<Integer> descendingIterator = pluginsToUse.descendingIterator();
+        while (descendingIterator.hasNext()) {
+            Integer index = descendingIterator.next();
             il.add(new InsnNode(Opcodes.ACONST_NULL));
             il.add(new VarInsnNode(Opcodes.ALOAD, frameDataVarIndex));
             il.add(TreeInstructions.getPushInstruction(index));
@@ -212,7 +214,9 @@ public class Transformer implements ClassFileTransformer {
 
     private InsnList getReturnTraceInstructions(Type returnType, int frameDataVarIndex, LinkedList<Integer> pluginsToUse) {
         InsnList il = new InsnList();
-        for (Integer index : pluginsToUse) {
+        Iterator<Integer> descendingIterator = pluginsToUse.descendingIterator();
+        while (descendingIterator.hasNext()) {
+            Integer index = descendingIterator.next();
             if (returnType.getSize() == 1) {
                 il.add(new InsnNode(Opcodes.DUP));
             } else {
