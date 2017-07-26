@@ -57,14 +57,8 @@ public class Transformer implements ClassFileTransformer {
             final byte[] classfileBuffer)
             throws IllegalClassFormatException {
 
-        LinkedList<Integer> pluginsInterceptingClass = new LinkedList<>();
-        for (int i = 0; i < plugins.length; i++) {
-            if (plugins[i].getFilter().instrumentClass(className, protectionDomain, loader)) {
-                pluginsInterceptingClass.add(i);
-            }
-            instrumentations[i].removeTransformedClass(className);
-        }
-        if (pluginsInterceptingClass.isEmpty()) {
+        LinkedList<Integer> pluginsInterceptingClass = getPluginsInterceptingClass(className, protectionDomain, loader);
+        if (pluginsInterceptingClass == null || pluginsInterceptingClass.isEmpty()) {
             return classfileBuffer;
         }
 
@@ -72,6 +66,33 @@ public class Transformer implements ClassFileTransformer {
         ClassNode cn = new ClassNode();
         cr.accept(cn, 0);
 
+        boolean transformed = transformMethods(cn, pluginsInterceptingClass);
+        if (!transformed) {
+            return classfileBuffer;
+        } else {
+            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            cn.accept(cw);
+            return cw.toByteArray();
+        }
+    }
+
+    private LinkedList<Integer> getPluginsInterceptingClass(String className, ProtectionDomain protectionDomain, ClassLoader loader) {
+        for (Plugin plugin : plugins) {
+            if (classBelongsToPlugin(className, plugin)) {
+                return null;
+            }
+        }
+        LinkedList<Integer> ret = new LinkedList<>();
+        for (int i = 0; i < plugins.length; i++) {
+            if (plugins[i].getFilter().instrumentClass(className, protectionDomain, loader)) {
+                ret.add(i);
+            }
+            instrumentations[i].removeTransformedClass(className);
+        }
+        return ret;
+    }
+
+    private boolean transformMethods(ClassNode cn, LinkedList<Integer> pluginsInterceptingClass) {
         List<MethodNode> methods = cn.methods;
         boolean transformed = false;
         for (MethodNode mn : methods) {
@@ -82,7 +103,7 @@ public class Transformer implements ClassFileTransformer {
             for (Integer i : pluginsInterceptingClass) {
                 if (plugins[i].getFilter().instrumentMethod(cn, mn)) {
                     pluginsToUse.add(i);
-                    instrumentations[i].addTransformedClass(className);
+                    instrumentations[i].addTransformedClass(cn.name);
                 }
             }
             if (!pluginsToUse.isEmpty()) {
@@ -90,15 +111,13 @@ public class Transformer implements ClassFileTransformer {
                 transformed = true;
             }
         }
-        if (!transformed) {
-            return classfileBuffer;
-        }
+        return transformed;
+    }
 
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-
-        cn.accept(cw);
-
-        return cw.toByteArray();
+    private static boolean classBelongsToPlugin(String className, Plugin plugin) {
+        return className.equals(plugin.getClass().getCanonicalName())
+                || className.equals(plugin.getFilter().getClass().getCanonicalName())
+                || className.equals(plugin.getListener().getClass().getCanonicalName());
     }
 
     private boolean modifyMethod(ClassNode cn, MethodNode mn, LinkedList<Integer> pluginsToUse) {
