@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 brutusin.org
+ * Copyright 2017 brutusin.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
+/**
+ *
+ * @author Ignacio del Valle Alles idelvall@brutusin.org
+ */
 public class TreeInstructions {
 
     public static VarInsnNode getLoadInst(Type type, int position) {

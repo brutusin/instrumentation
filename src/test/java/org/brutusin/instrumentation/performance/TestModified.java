@@ -16,7 +16,7 @@ import org.brutusin.instrumentation.spi.Instrumentation;
 import org.brutusin.instrumentation.spi.Listener;
 import org.brutusin.instrumentation.spi.Plugin;
 import org.brutusin.instrumentation.spi.impl.AllFilterImpl;
-import org.brutusin.instrumentation.spi.impl.InstrumentationImpl;
+import org.brutusin.instrumentation.runtime.InstrumentationImpl;
 import org.brutusin.instrumentation.utils.Helper;
 
 /**

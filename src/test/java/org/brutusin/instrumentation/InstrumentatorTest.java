@@ -25,7 +25,7 @@ import org.brutusin.instrumentation.spi.Filter;
 import org.brutusin.instrumentation.spi.Instrumentation;
 import org.brutusin.instrumentation.spi.Plugin;
 import org.brutusin.instrumentation.spi.impl.AllFilterImpl;
-import org.brutusin.instrumentation.spi.impl.InstrumentationImpl;
+import org.brutusin.instrumentation.runtime.InstrumentationImpl;
 import org.brutusin.instrumentation.spi.impl.VoidListener;
 import org.junit.Test;
 import org.objectweb.asm.tree.ClassNode;

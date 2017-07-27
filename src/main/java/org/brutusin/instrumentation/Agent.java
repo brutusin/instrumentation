@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 brutusin.org
+ * Copyright 2017 brutusin.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,14 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.brutusin.instrumentation.spi.Plugin;
-import org.brutusin.instrumentation.spi.impl.InstrumentationImpl;
+import org.brutusin.instrumentation.runtime.InstrumentationImpl;
 
+/**
+ * Framework entry point (should be referenced 'Premain-Class' in the manifest
+ * of the agent jar).
+ *
+ * @author Ignacio del Valle Alles idelvall@brutusin.org
+ */
 public class Agent {
 
     private static final String PLUGIN_DESCRIPTOR_RESOURCE_NAME = ".brutusin-instrumentation";
@@ -104,7 +110,7 @@ public class Agent {
         }
         return null;
     }
-    
+
     public static void main(String[] args) {
         String str = "file:/Users/ignacio/Documents/GitHub/runtime-agent/target/runtime-agent-0.0.0-SNAPSHOT-jar-with-dependencies.jar!/fsdfsd";
         Matcher m = JAR_FILE_NAME_FROM_URL_PATTERN.matcher(str);

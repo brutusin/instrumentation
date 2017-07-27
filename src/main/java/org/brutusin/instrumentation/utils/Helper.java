@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 brutusin.org
+ * Copyright 2017 brutusin.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.brutusin.instrumentation.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -30,6 +28,10 @@ import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
+/**
+ *
+ * @author Ignacio del Valle Alles idelvall@brutusin.org
+ */
 public class Helper {
 
     public static Object getSource(Class declaringClass, String name,
