@@ -13,8 +13,8 @@
     <description>Extensible java agent framework to instrument programs running on the JVM</description>
     <url>https://github.com/brutusin/instrumentation</url>
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
     <issueManagement>
         <system>GitHub Issues</system>

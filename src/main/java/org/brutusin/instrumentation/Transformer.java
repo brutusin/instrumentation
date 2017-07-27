@@ -94,7 +94,7 @@ public class Transformer implements ClassFileTransformer {
         if (className.startsWith("org/brutusin/instrumentation")) {
             return null;
         }
-        LinkedList<Integer> ret = new LinkedList<>();
+        LinkedList<Integer> ret = new LinkedList<Integer>();
         for (int i = 0; i < plugins.length; i++) {
             if (plugins[i].getFilter().instrumentClass(className, protectionDomain, loader)) {
                 ret.add(i);
@@ -111,7 +111,7 @@ public class Transformer implements ClassFileTransformer {
             if (Helper.isAbstract(mn) || Helper.isNative(mn)) {
                 continue;
             }
-            LinkedList<Integer> pluginsToUse = new LinkedList<>();
+            LinkedList<Integer> pluginsToUse = new LinkedList<Integer>();
             for (Integer i : pluginsInterceptingClass) {
                 if (plugins[i].getFilter().instrumentMethod(cn, mn)) {
                     pluginsToUse.add(i);

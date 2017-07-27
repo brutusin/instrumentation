@@ -17,36 +17,23 @@ package org.brutusin.instrumentation.spi.impl;
 
 import org.brutusin.instrumentation.spi.Filter;
 import java.security.ProtectionDomain;
-import org.brutusin.instrumentation.Agent;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
- * A filter that accepts all instrumentable classes and methods from
- * class loaders not up in the hierarchy of the agent class loader.
+ * A filter that does not accepts any class or method. 
  *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
-public class AllFilterImpl implements Filter {
+public class NoneFilterImpl implements Filter {
 
     @Override
     public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl) {
-        return isAncestor(Agent.class.getClassLoader(), cl);
+        return false;
     }
 
     @Override
     public boolean instrumentMethod(ClassNode classNode, MethodNode mn) {
-        return true;
+        return false;
     }
-
-    private static boolean isAncestor(ClassLoader ancestor, ClassLoader cl) {
-        if (ancestor == null || cl == null) {
-            return false;
-        }
-        if (ancestor.equals(cl)) {
-            return true;
-        }
-        return isAncestor(ancestor, cl.getParent());
-    }
-
 }

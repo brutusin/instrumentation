@@ -39,7 +39,6 @@ public class Agent {
     private static final Pattern JAR_FILE_NAME_FROM_URL_PATTERN = Pattern.compile("(?:zip:|jar:file:/|file:/)([^˛!]*)(?:!/.*)?", Pattern.CASE_INSENSITIVE);
 
     public static void premain(final String agentArg, java.lang.instrument.Instrumentation javaInstrumentation) throws Exception {
-
         String[] pluginClassNames = readPluginClassNamesFromDescriptor();
         if (pluginClassNames.length == 0) {
             throw new Error("Instrumentation descriptor '" + PLUGIN_DESCRIPTOR_RESOURCE_NAME + "' does not contain any plugin class name");
@@ -71,7 +70,6 @@ public class Agent {
     }
 
     private static String[] readPluginClassNamesFromDescriptor() throws IOException {
-
         Enumeration<URL> resources = Agent.class.getClassLoader().getResources(PLUGIN_DESCRIPTOR_RESOURCE_NAME);
         String agentJar = getJarName(Agent.class.getProtectionDomain().getCodeSource().getLocation());
         if (agentJar == null) {
@@ -90,7 +88,7 @@ public class Agent {
         if (descriptorUrl == null) {
             throw new Error("Instrumentation descriptor '" + PLUGIN_DESCRIPTOR_RESOURCE_NAME + "' not found in the agent jar");
         }
-        ArrayList<String> list = new ArrayList<>();
+        ArrayList<String> list = new ArrayList<String>();
         Scanner scanner = new Scanner(descriptorUrl.openStream());
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine().trim();
@@ -98,9 +96,7 @@ public class Agent {
                 list.add(line);
             }
         }
-
         return list.toArray(new String[list.size()]);
-
     }
 
     private static String getJarName(URL url) {

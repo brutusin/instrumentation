@@ -28,7 +28,7 @@ import java.util.Set;
 public final class InstrumentationImpl implements Instrumentation {
 
     private final java.lang.instrument.Instrumentation javaInstrumentation;
-    private final Set<String> transformedClassNames = new HashSet<>();
+    private final Set<String> transformedClassNames = new HashSet<String>();
 
     private boolean stale = true;
     private String[] transformedClassNamesArray;
