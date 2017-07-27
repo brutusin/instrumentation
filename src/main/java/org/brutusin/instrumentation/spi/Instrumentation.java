@@ -45,6 +45,13 @@ public interface Instrumentation {
     boolean isModifiableClass(Class<?> clazz);
 
     /**
+     * Returns an array of all classes currently loaded by the JVM.
+     *
+     * @return
+     */
+    Class[] getAllLoadedClasses();
+
+    /**
      * Returns the names of the classes that contain method hooks introduced by
      * the current plugin.
      *

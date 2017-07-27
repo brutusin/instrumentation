@@ -61,6 +61,11 @@ public final class InstrumentationImpl implements Instrumentation {
         javaInstrumentation.retransformClasses(classes);
     }
 
+    @Override
+    public Class[] getAllLoadedClasses() {
+        return javaInstrumentation.getAllLoadedClasses();
+    }
+    
     public void removeTransformedClass(String className) {
         transformedClassNames.remove(className);
         stale = true;
