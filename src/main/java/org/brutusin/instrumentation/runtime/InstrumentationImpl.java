@@ -17,24 +17,30 @@ package org.brutusin.instrumentation.runtime;
 
 import org.brutusin.instrumentation.spi.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.brutusin.instrumentation.Transformer;
 
 /**
- * Single implementation of the  {@link Instrumentation Instrumentation} interface.
- * 
+ * Single implementation of the {@link Instrumentation Instrumentation}
+ * interface.
+ *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
 public final class InstrumentationImpl implements Instrumentation {
 
     private final java.lang.instrument.Instrumentation javaInstrumentation;
     private final Set<String> transformedClassNames = new HashSet<String>();
+    private final Transformer transformer;
 
     private boolean stale = true;
     private String[] transformedClassNamesArray;
 
-    public InstrumentationImpl(java.lang.instrument.Instrumentation javaInstrumentation) {
+    public InstrumentationImpl(Transformer transformer, java.lang.instrument.Instrumentation javaInstrumentation) {
         this.javaInstrumentation = javaInstrumentation;
+        this.transformer = transformer;
     }
 
     @Override
@@ -58,14 +64,28 @@ public final class InstrumentationImpl implements Instrumentation {
 
     @Override
     public void retransformClasses(Class<?>... classes) throws UnmodifiableClassException {
-        javaInstrumentation.retransformClasses(classes);
+        if (classes != null) {
+            javaInstrumentation.retransformClasses(classes);
+        }
     }
 
     @Override
     public Class[] getAllLoadedClasses() {
         return javaInstrumentation.getAllLoadedClasses();
     }
-    
+
+    @Override
+    public Class[] getRetransformableClasses() {
+        List<Class> list = new ArrayList<Class>();
+        Class[] allLoadedClasses = getAllLoadedClasses();
+        for (Class clazz : allLoadedClasses) {
+            if (isModifiableClass(clazz) && transformer.isRetransformable(clazz.getName())) {
+                list.add(clazz);
+            }
+        }
+        return list.toArray(new Class[list.size()]);
+    }
+
     public void removeTransformedClass(String className) {
         transformedClassNames.remove(className);
         stale = true;

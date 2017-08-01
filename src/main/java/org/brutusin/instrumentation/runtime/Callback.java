@@ -15,7 +15,7 @@
  */
 package org.brutusin.instrumentation.runtime;
 
-import org.brutusin.instrumentation.spi.Plugin;
+import org.brutusin.instrumentation.spi.Hook;
 
 /**
  *
@@ -23,7 +23,7 @@ import org.brutusin.instrumentation.spi.Plugin;
  */
 public final class Callback {
 
-    public static Plugin[] plugins;
+    public static Hook[] plugins;
 
     public static Object onStart(FrameData fd, int i) {
         return plugins[i].getListener().onStart(fd);

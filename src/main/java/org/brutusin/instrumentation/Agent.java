@@ -15,103 +15,41 @@
  */
 package org.brutusin.instrumentation;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.brutusin.instrumentation.spi.Plugin;
 import org.brutusin.instrumentation.runtime.InstrumentationImpl;
+import org.brutusin.instrumentation.spi.BctraceAgent;
+import org.brutusin.instrumentation.spi.Hook;
 
 /**
- * Framework entry point (should be referenced 'Premain-Class' in the manifest
- * of the agent jar).
+ * Framework entry point.
  *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
 public class Agent {
 
-    private static final String PLUGIN_DESCRIPTOR_RESOURCE_NAME = ".brutusin-instrumentation";
-    private static final Pattern JAR_FILE_NAME_FROM_URL_PATTERN = Pattern.compile("(?:zip:|jar:file:/|file:/)([^˛!]*)(?:!/.*)?", Pattern.CASE_INSENSITIVE);
-
-    public static void premain(final String agentArg, java.lang.instrument.Instrumentation javaInstrumentation) throws Exception {
-        String[] pluginClassNames = readPluginClassNamesFromDescriptor();
-        if (pluginClassNames.length == 0) {
-            throw new Error("Instrumentation descriptor '" + PLUGIN_DESCRIPTOR_RESOURCE_NAME + "' does not contain any plugin class name");
+    public static void premain(final String arg, java.lang.instrument.Instrumentation javaInstrumentation) throws Exception {
+        if (arg == null) {
+            throw new Error("An agent implementation class has to be specified: {className}[:{initArgs}]");
         }
-        String[] args;
-        if (agentArg != null) {
-            args = agentArg.split(":", -1);
-            if (args.length != pluginClassNames.length) {
-                throw new Error("Invalid number of arguments supplied to the agent. One argument per plugin has to be informed 'arg1:arg2:...argn'. Plugins: " + Arrays.toString(pluginClassNames));
-            }
+        String[] tokens = arg.split(":", 2);
+        String agentClass = tokens[0];
+        String agentArgs;
+        if (tokens.length == 2) {
+            agentArgs = tokens[1];
         } else {
-            args = new String[pluginClassNames.length];
+            agentArgs = null;
         }
-        Plugin[] plugins = new Plugin[pluginClassNames.length];
-        InstrumentationImpl[] instrumentations = new InstrumentationImpl[pluginClassNames.length];
-        for (int i = 0; i < pluginClassNames.length; i++) {
-            instrumentations[i] = new InstrumentationImpl(javaInstrumentation);
-            plugins[i] = createPlugin(pluginClassNames[i], args[i], instrumentations[i]);
+        BctraceAgent ba = (BctraceAgent) Class.forName(agentClass).newInstance();
+        ba.init(agentArgs);
+
+        Transformer transformer = new Transformer();
+
+        Hook[] plugins = ba.getHooks();
+        InstrumentationImpl[] instrumentations = new InstrumentationImpl[plugins.length];
+        for (int i = 0; i < plugins.length; i++) {
+            instrumentations[i] = new InstrumentationImpl(transformer, javaInstrumentation);
+            plugins[i].init(instrumentations[i]);
         }
-        Transformer transformer = new Transformer(plugins, instrumentations);
+        transformer.init(plugins, instrumentations);
         javaInstrumentation.addTransformer(transformer, javaInstrumentation.isRetransformClassesSupported());
-    }
-
-    private static Plugin createPlugin(String className, String arg, InstrumentationImpl ins) throws ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
-        Class<?> clazz = Agent.class.getClassLoader().loadClass(className);
-        Plugin ret = (Plugin) clazz.newInstance();
-        ret.init(arg, ins);
-        return ret;
-    }
-
-    private static String[] readPluginClassNamesFromDescriptor() throws IOException {
-        Enumeration<URL> resources = Agent.class.getClassLoader().getResources(PLUGIN_DESCRIPTOR_RESOURCE_NAME);
-        String agentJar = getJarName(Agent.class.getProtectionDomain().getCodeSource().getLocation());
-        if (agentJar == null) {
-            throw new Error("Could not extract agent jar file name");
-        }
-        URL descriptorUrl = null;
-        // Ignores resources with the same name out the agent jar
-        while (resources.hasMoreElements()) {
-            URL url = resources.nextElement();
-            String jarFilename = getJarName(url);
-            if (agentJar.equals(jarFilename)) {
-                descriptorUrl = url;
-                break;
-            }
-        }
-        if (descriptorUrl == null) {
-            throw new Error("Instrumentation descriptor '" + PLUGIN_DESCRIPTOR_RESOURCE_NAME + "' not found in the agent jar");
-        }
-        ArrayList<String> list = new ArrayList<String>();
-        Scanner scanner = new Scanner(descriptorUrl.openStream());
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine().trim();
-            if (!line.isEmpty()) {
-                list.add(line);
-            }
-        }
-        return list.toArray(new String[list.size()]);
-    }
-
-    private static String getJarName(URL url) {
-        Matcher m = JAR_FILE_NAME_FROM_URL_PATTERN.matcher(url.toExternalForm());
-        if (m.find()) {
-            return m.group(1);
-        }
-        return null;
-    }
-
-    public static void main(String[] args) {
-        String str = "file:/Users/ignacio/Documents/GitHub/runtime-agent/target/runtime-agent-0.0.0-SNAPSHOT-jar-with-dependencies.jar!/fsdfsd";
-        Matcher m = JAR_FILE_NAME_FROM_URL_PATTERN.matcher(str);
-        if (m.find()) {
-            System.out.println(m.group(1));
-        }
     }
 }

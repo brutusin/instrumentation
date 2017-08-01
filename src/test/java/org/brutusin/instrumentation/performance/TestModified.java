@@ -14,10 +14,10 @@ import org.brutusin.instrumentation.runtime.FrameData;
 import org.brutusin.instrumentation.spi.Filter;
 import org.brutusin.instrumentation.spi.Instrumentation;
 import org.brutusin.instrumentation.spi.Listener;
-import org.brutusin.instrumentation.spi.Plugin;
-import org.brutusin.instrumentation.spi.impl.AllFilterImpl;
+import org.brutusin.instrumentation.spi.impl.NonBootstrapFilter;
 import org.brutusin.instrumentation.runtime.InstrumentationImpl;
 import org.brutusin.instrumentation.utils.Helper;
+import org.brutusin.instrumentation.spi.Hook;
 
 /**
  *
@@ -30,7 +30,7 @@ public class TestModified {
      */
     public static void main(String[] args) throws Throwable {
 
-        Plugin plugin = new Plugin() {
+        Hook plugin = new Hook() {
 
             ThreadLocal<LinkedList> tl = new ThreadLocal();
 
@@ -40,7 +40,7 @@ public class TestModified {
 
             @Override
             public Filter getFilter() {
-                return new AllFilterImpl();
+                return new NonBootstrapFilter();
             }
 
             @Override
@@ -73,11 +73,11 @@ public class TestModified {
             }
 
             @Override
-            public void init(String s, Instrumentation ins) {
+            public void init(Instrumentation ins) {
             }
 
         };
-        Callback.plugins = new Plugin[]{plugin};
+        Callback.plugins = new Hook[]{plugin};
         TestModified t = new TestModified();
         long nano = System.nanoTime();
         t.fact(5000);
@@ -101,7 +101,7 @@ public class TestModified {
     }
 
     public long fact2(long n) throws Throwable {
-        FrameData fd = FrameData.getInstance(this, "aaa", "aaad", new Object[]{n});
+        FrameData fd = FrameData.getInstance(this, 1, new Object[]{n});
         Object r = Callback.onStart(fd, 0);
         if (r != null) {
             return ((Long) r).longValue();
@@ -110,7 +110,7 @@ public class TestModified {
     }
 
     public long fact(long n) throws Throwable {
-        FrameData fd = FrameData.getInstance(this, "aaa", "aaad", new Object[]{n});
+        FrameData fd = FrameData.getInstance(this, 1, new Object[]{n});
         Object r = Callback.onStart(fd, 0);
         if (r != null) {
             return ((Long) r).longValue();

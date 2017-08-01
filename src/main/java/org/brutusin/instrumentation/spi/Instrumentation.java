@@ -52,6 +52,14 @@ public interface Instrumentation {
     Class[] getAllLoadedClasses();
 
     /**
+     * Returns an array of all classes currently loaded by the JVM, able to be
+     * retransformed.
+     *
+     * @return
+     */
+    Class[] getRetransformableClasses();
+
+    /**
      * Returns the names of the classes that contain method hooks introduced by
      * the current plugin.
      *

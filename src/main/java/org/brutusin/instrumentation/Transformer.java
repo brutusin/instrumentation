@@ -16,14 +16,17 @@
 package org.brutusin.instrumentation;
 
 import org.brutusin.instrumentation.runtime.InstrumentationImpl;
-import org.brutusin.instrumentation.spi.Plugin;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.brutusin.instrumentation.runtime.Callback;
+import org.brutusin.instrumentation.runtime.MethodRegistry;
 import org.brutusin.instrumentation.utils.Helper;
 import org.brutusin.instrumentation.utils.TreeInstructions;
 import org.objectweb.asm.ClassReader;
@@ -39,6 +42,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.brutusin.instrumentation.spi.Hook;
 
 /**
  *
@@ -46,16 +50,18 @@ import org.objectweb.asm.tree.VarInsnNode;
  */
 public class Transformer implements ClassFileTransformer {
 
-    private final Plugin[] plugins;
-    private final InstrumentationImpl[] instrumentations;
+    private Hook[] plugins;
+    private InstrumentationImpl[] instrumentations;
 
-    public Transformer(Plugin[] plugins, InstrumentationImpl[] instrumentations) {
+    private final Set<String> retransformableClasses = Collections.synchronizedSet(new HashSet<String>());
+
+    public void init(Hook[] plugins, InstrumentationImpl[] instrumentations) {
         this.plugins = plugins;
         this.instrumentations = instrumentations;
         Callback.plugins = plugins;
     }
 
-    public Plugin[] getPlugins() {
+    public Hook[] getPlugins() {
         return plugins;
     }
 
@@ -66,34 +72,50 @@ public class Transformer implements ClassFileTransformer {
             final byte[] classfileBuffer)
             throws IllegalClassFormatException {
 
-        LinkedList<Integer> pluginsInterceptingClass = getPluginsInterceptingClass(className, protectionDomain, loader);
-        if (pluginsInterceptingClass == null || pluginsInterceptingClass.isEmpty()) {
-            return classfileBuffer;
-        }
+        try {
+            // Do not instrument agent classes
+            if (protectionDomain != null && protectionDomain.equals(getClass().getProtectionDomain())) {
+                return null;
+            }
+            if (className == null) {
+                return null;
+            }
+            if (className.startsWith("sun/") || className.startsWith("com/sun/") || className.startsWith("javafx/")|| className.startsWith("org/springframework/boot/")) {
+                return null;
+            }
+            if (className.startsWith("java/lang/ThreadLocal")) {
+                return null;
+            }
+            retransformableClasses.add(className.replace('/', '.'));
 
-        ClassReader cr = new ClassReader(classfileBuffer);
-        ClassNode cn = new ClassNode();
-        cr.accept(cn, 0);
+            LinkedList<Integer> pluginsInterceptingClass = getPluginsInterceptingClass(className, protectionDomain, loader);
+            if (pluginsInterceptingClass == null || pluginsInterceptingClass.isEmpty()) {
+                return null;
+            }
 
-        boolean transformed = transformMethods(cn, pluginsInterceptingClass);
-        if (!transformed) {
-            return classfileBuffer;
-        } else {
-            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-            cn.accept(cw);
-            return cw.toByteArray();
+            ClassReader cr = new ClassReader(classfileBuffer);
+            ClassNode cn = new ClassNode();
+            cr.accept(cn, 0);
+
+            boolean transformed = transformMethods(cn, pluginsInterceptingClass);
+            if (!transformed) {
+                return null;
+            } else {
+                ClassWriter cw = new StaticClassWriter(cr, ClassWriter.COMPUTE_FRAMES, loader);
+                cn.accept(cw);
+                return cw.toByteArray();
+            }
+        } catch (Throwable th) { // Errors rised up here are invisible, so capture them and show them
+            th.printStackTrace(System.err);
+            return null;
         }
     }
 
+    public boolean isRetransformable(String className) {
+        return retransformableClasses.contains(className);
+    }
+
     private LinkedList<Integer> getPluginsInterceptingClass(String className, ProtectionDomain protectionDomain, ClassLoader loader) {
-        for (Plugin plugin : plugins) {
-            if (classBelongsToPlugin(className, plugin)) {
-                return null;
-            }
-        }
-        if (className.startsWith("org/brutusin/instrumentation")) {
-            return null;
-        }
         LinkedList<Integer> ret = new LinkedList<Integer>();
         for (int i = 0; i < plugins.length; i++) {
             if (plugins[i].getFilter().instrumentClass(className, protectionDomain, loader)) {
@@ -111,6 +133,7 @@ public class Transformer implements ClassFileTransformer {
             if (Helper.isAbstract(mn) || Helper.isNative(mn)) {
                 continue;
             }
+
             LinkedList<Integer> pluginsToUse = new LinkedList<Integer>();
             for (Integer i : pluginsInterceptingClass) {
                 if (plugins[i].getFilter().instrumentMethod(cn, mn)) {
@@ -126,12 +149,6 @@ public class Transformer implements ClassFileTransformer {
         return transformed;
     }
 
-    private static boolean classBelongsToPlugin(String className, Plugin plugin) {
-        return className.equals(plugin.getClass().getCanonicalName())
-                || className.equals(plugin.getFilter().getClass().getCanonicalName())
-                || className.equals(plugin.getListener().getClass().getCanonicalName());
-    }
-
     private boolean modifyMethod(ClassNode cn, MethodNode mn, LinkedList<Integer> pluginsToUse) {
         int frameDataVarIndex = addTraceStart(cn, mn, pluginsToUse);
         addTraceReturn(mn, frameDataVarIndex, pluginsToUse);
@@ -141,18 +158,18 @@ public class Transformer implements ClassFileTransformer {
     }
 
     private int addTraceStart(ClassNode cn, MethodNode mn, LinkedList<Integer> pluginsToUse) {
+        int methodId = MethodRegistry.getInstance().getMethodId(cn.name, mn.name + mn.desc);
         InsnList il = new InsnList();
         if (Helper.isStatic(mn) || mn.name.equals("<init>")) {
             il.add(new InsnNode(Opcodes.ACONST_NULL));
         } else {
             il.add(new VarInsnNode(Opcodes.ALOAD, 0));
         }
-        il.add(new LdcInsnNode(cn.name));
-        il.add(new LdcInsnNode(mn.name + mn.desc));
+        il.add(TreeInstructions.getPushInstruction(methodId));
         addMethodParametersVariable(il, mn);
         il.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
                 "org/brutusin/instrumentation/runtime/FrameData", "getInstance",
-                "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Lorg/brutusin/instrumentation/runtime/FrameData;", false));
+                "(Ljava/lang/Object;I[Ljava/lang/Object;)Lorg/brutusin/instrumentation/runtime/FrameData;", false));
 
         il.add(new InsnNode(Opcodes.DUP));
         il.add(new VarInsnNode(Opcodes.ASTORE, mn.maxLocals));

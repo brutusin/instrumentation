@@ -22,45 +22,26 @@ package org.brutusin.instrumentation.runtime;
  */
 public final class FrameData {
 
-    private String className;
-    private Object instance;
-    private String methodDescriptor;
-    private Object[] args;
+    public int methodId;
+    public Object instance;
+    public Object[] args;
 
     private FrameData() {
     }
 
-    public static FrameData getInstance(Object instance, String className, String methodDescriptor, Object[] args) {
+    public static FrameData getInstance(Object instance, int methodId, Object[] args) {
         FrameData ret = new FrameData();
-        ret.className = className;
         ret.instance = instance;
-        ret.methodDescriptor = methodDescriptor;
         ret.args = args;
+        ret.methodId = methodId;
         return ret;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public Object getInstance() {
-        return instance;
-    }
-
-    public String getMethodDescriptor() {
-        return methodDescriptor;
-    }
-
-    public Object[] getArgs() {
-        return args;
     }
 
     public FrameData copy() {
         FrameData fd = new FrameData();
         fd.args = args;
-        fd.className = className;
+        fd.methodId = methodId;
         fd.instance = instance;
-        fd.methodDescriptor = methodDescriptor;
         return fd;
     }
 
