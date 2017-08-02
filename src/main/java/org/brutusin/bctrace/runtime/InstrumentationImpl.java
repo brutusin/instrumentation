@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.runtime;
+package org.brutusin.bctrace.runtime;
 
-import org.brutusin.instrumentation.spi.Instrumentation;
+import org.brutusin.bctrace.spi.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.brutusin.instrumentation.Transformer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Single implementation of the {@link Instrumentation Instrumentation}
@@ -33,14 +34,12 @@ public final class InstrumentationImpl implements Instrumentation {
 
     private final java.lang.instrument.Instrumentation javaInstrumentation;
     private final Set<String> transformedClassNames = new HashSet<String>();
-    private final Transformer transformer;
 
     private boolean stale = true;
-    private String[] transformedClassNamesArray;
+    private Class[] transformedClasses;
 
-    public InstrumentationImpl(Transformer transformer, java.lang.instrument.Instrumentation javaInstrumentation) {
+    public InstrumentationImpl(java.lang.instrument.Instrumentation javaInstrumentation) {
         this.javaInstrumentation = javaInstrumentation;
-        this.transformer = transformer;
     }
 
     @Override
@@ -54,12 +53,19 @@ public final class InstrumentationImpl implements Instrumentation {
     }
 
     @Override
-    public String[] getTransformedClasses() {
+    public Class[] getTransformedClasses() {
         if (stale) {
-            transformedClassNamesArray = transformedClassNames.toArray(new String[transformedClassNames.size()]);
+            List<Class> list = new LinkedList<Class>();
+            Class[] loaded = getAllLoadedClasses();
+            for (Class clazz : loaded) {
+                if (transformedClassNames.contains(clazz.getName())) {
+                    list.add(clazz);
+                }
+            }
+            transformedClasses = list.toArray(new Class[list.size()]);
             stale = false;
         }
-        return transformedClassNamesArray;
+        return transformedClasses;
     }
 
     @Override
@@ -72,18 +78,6 @@ public final class InstrumentationImpl implements Instrumentation {
     @Override
     public Class[] getAllLoadedClasses() {
         return javaInstrumentation.getAllLoadedClasses();
-    }
-
-    @Override
-    public Class[] getRetransformableClasses() {
-        List<Class> list = new ArrayList<Class>();
-        Class[] allLoadedClasses = getAllLoadedClasses();
-        for (Class clazz : allLoadedClasses) {
-            if (isModifiableClass(clazz) && transformer.isRetransformable(clazz.getName())) {
-                list.add(clazz);
-            }
-        }
-        return list.toArray(new Class[list.size()]);
     }
 
     public void removeTransformedClass(String className) {

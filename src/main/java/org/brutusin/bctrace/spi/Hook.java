@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.spi;
+package org.brutusin.bctrace.spi;
 
 /**
  * An <b>instrumentation hook</b> determines what methods to instrument and what
@@ -23,27 +23,52 @@ package org.brutusin.instrumentation.spi;
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  * @see BctraceAgent
  */
-public interface Hook {
+public abstract class Hook {
+
+    protected Instrumentation instrumentation;
 
     /**
      * Initializes the plugin. Called once at startup before initial
      * instrumentation is performed.
      *
-     * @param ins Intrumentation callback, allowing triggering retransformations
+     * @param instrumentation Intrumentation callback, allowing triggering
+     * retransformations
      */
-    void init(Instrumentation ins);
+    public final void init(Instrumentation instrumentation) {
+        this.instrumentation = instrumentation;
+        doInit();
+    }
+
+    /**
+     * Allows subclasses to implement initialization logic.
+     */
+    public void doInit() {
+    }
+
+    public final Instrumentation getInstrumentation() {
+        return instrumentation;
+    }
 
     /**
      * Returns the filter, deciding what methods to instrument.
      *
      * @return
      */
-    Filter getFilter();
+    public abstract Filter getFilter();
 
     /**
      * Returns the listener invoked by the instrumented method hooks.
      *
      * @return
      */
-    Listener getListener();
+    public abstract Listener getListener();
+
+    /**
+     * Communicates an error to the hook implementation
+     *
+     * @param th
+     */
+    public void onError(Throwable th) {
+
+    }
 }

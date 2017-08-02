@@ -7,29 +7,29 @@
         <version>1.0.5</version>
     </parent>
     <groupId>org.brutusin</groupId>
-    <artifactId>instrumentation</artifactId>
+    <artifactId>bctrace</artifactId>
     <version>2.0.0-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Extensible java agent framework to instrument programs running on the JVM</description>
-    <url>https://github.com/brutusin/instrumentation</url>
+    <url>https://github.com/brutusin/bctrace</url>
     <properties>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/brutusin/instrumentation/issues</url>
+        <url>https://github.com/brutusin/bctrace/issues</url>
     </issueManagement>
     
     <ciManagement>
         <system>travis-ci</system>
-        <url>https://travis-ci.org/brutusin/instrumentation</url>
+        <url>https://travis-ci.org/brutusin/bctrace</url>
     </ciManagement>
     
     <scm>
-        <url>https://github.com/brutusin/instrumentation</url>
-        <connection>scm:git:https://github.com/brutusin/instrumentation.git</connection>
-        <developerConnection>scm:git:https://github.com/brutusin/instrumentation.git</developerConnection>
+        <url>https://github.com/brutusin/bctrace</url>
+        <connection>scm:git:https://github.com/brutusin/bctrace.git</connection>
+        <developerConnection>scm:git:https://github.com/brutusin/bctrace.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     

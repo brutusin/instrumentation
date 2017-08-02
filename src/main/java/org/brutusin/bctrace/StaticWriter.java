@@ -33,7 +33,7 @@
 // portions of ClassWriterComputeFramesTest in the set of ASM tests.
 // We have done a fair bit of rewriting for readability, and changed
 // the comments.  The original author is Eric Bruneton.
-package org.brutusin.instrumentation;
+package org.brutusin.bctrace;
 
 import java.io.IOException;
 import java.io.InputStream;

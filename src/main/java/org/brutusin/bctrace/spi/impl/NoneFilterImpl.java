@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.spi.impl;
+package org.brutusin.bctrace.spi.impl;
 
-import org.brutusin.instrumentation.spi.Listener;
-import org.brutusin.instrumentation.runtime.FrameData;
+import org.brutusin.bctrace.spi.Filter;
+import java.security.ProtectionDomain;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 /**
- * A listener that hears but not listens. :)
- * 
+ * A filter that does not accepts any class or method. 
+ *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
-public class VoidListener implements Listener {
+public class NoneFilterImpl implements Filter {
 
     @Override
-    public Object onStart(FrameData fd) {
-        return null;
+    public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl) {
+        return false;
     }
 
     @Override
-    public void onFinishedReturn(Object ret, FrameData fd) {
-    }
-
-    @Override
-    public void onFinishedThrowable(Throwable th, FrameData fd) {
-    }
-
-    @Override
-    public void onBeforeThrown(Throwable th, FrameData fd) {
+    public boolean instrumentMethod(ClassNode classNode, MethodNode mn) {
+        return false;
     }
 }

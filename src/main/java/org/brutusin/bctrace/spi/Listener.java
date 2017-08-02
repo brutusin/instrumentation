@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.spi;
+package org.brutusin.bctrace.spi;
 
-import org.brutusin.instrumentation.runtime.FrameData;
+import org.brutusin.bctrace.runtime.FrameData;
 
 /**
  * Listener instances define the actions to be performed when a instrumented

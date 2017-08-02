@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.spi.impl;
+package org.brutusin.bctrace.runtime;
 
-import org.brutusin.instrumentation.spi.Filter;
-import java.security.ProtectionDomain;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.brutusin.bctrace.spi.Hook;
 
 /**
- * A filter that does not accepts any class or method. 
  *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
-public class NoneFilterImpl implements Filter {
+public final class Callback {
 
-    @Override
-    public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl) {
-        return false;
+    public static Hook[] hooks;
+
+    public static Object onStart(FrameData fd, int i) {
+        return hooks[i].getListener().onStart(fd);
     }
 
-    @Override
-    public boolean instrumentMethod(ClassNode classNode, MethodNode mn) {
-        return false;
+    public static void onFinishedReturn(Object ret, FrameData fd, int i) {
+        hooks[i].getListener().onFinishedReturn(ret, fd);
+    }
+
+    public static void onFinishedThrowable(Throwable th, FrameData fd, int i) {
+        hooks[i].getListener().onFinishedThrowable(th, fd);
+    }
+
+    public static void onBeforeThrown(Throwable th, FrameData fd, int i) {
+        hooks[i].getListener().onBeforeThrown(th, fd);
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.runtime;
+package org.brutusin.bctrace.runtime;
 
 /**
  * Holds the information of a stack frame.

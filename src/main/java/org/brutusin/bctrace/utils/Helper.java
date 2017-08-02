@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.utils;
+package org.brutusin.bctrace.utils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

@@ -1,10 +1,10 @@
 /*
- * Copyright 2014 brutusin.org
+ * Copyright 2017 brutusin.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at 
- *   
+ * You may obtain a copy of the License at
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -13,43 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation;
+package org.brutusin.bctrace;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.Date;
 import org.apache.commons.io.IOUtils;
-import org.brutusin.instrumentation.utils.Helper;
+import org.brutusin.bctrace.utils.Helper;
 
-public class SimpleClass {
+/**
+ *
+ * @author Ignacio del Valle Alles idelvall@brutusin.org
+ */
+public class TestClass {
 
-    public static final String GREETING = "Hello world";
-
-    public static String sayHello(String name) {
-        return "Hello " + name + "!";
-    }
-  
-    public static String sayHelloDate(int age, String name, double height) {
-        return "Hello " + name + ", today is " + new Date(getStaticDate()) + "!";
-    }
-
-    public long getDate() {
-
-        File f = new File("");
-        sayHelloDate(11,"nacho",123.9);
-        return System.currentTimeMillis();
-    }
-
-    public static long getStaticDate() {
-        return System.currentTimeMillis();
-    }
-
-    public static void throwHello() {
-        //throw new RuntimeException(GREETING);
+    public static long fact(long n) {
+        if (n == 1) {
+            return 1;
+        } else {
+            return fact(n - 1) * n;
+        }
     }
     
+    public static long factWrapper(Long n) {
+        if (n == 1) {
+            return 1;
+        } else {
+            return factWrapper(n - 1) * n;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
-        Class clazz = SimpleClass.class;
+        Class clazz = TestClass.class;
         String className = clazz.getCanonicalName();
         String resourceName = className.replace('.', '/') + ".class";
         InputStream is = clazz.getClassLoader().getResourceAsStream(resourceName);

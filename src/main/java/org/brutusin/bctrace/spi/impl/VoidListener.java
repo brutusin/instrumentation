@@ -13,31 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.runtime;
+package org.brutusin.bctrace.spi.impl;
 
-import org.brutusin.instrumentation.spi.Hook;
+import org.brutusin.bctrace.spi.Listener;
+import org.brutusin.bctrace.runtime.FrameData;
 
 /**
- *
+ * A listener that hears but not listens. :)
+ * 
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
-public final class Callback {
+public class VoidListener implements Listener {
 
-    public static Hook[] plugins;
-
-    public static Object onStart(FrameData fd, int i) {
-        return plugins[i].getListener().onStart(fd);
+    @Override
+    public Object onStart(FrameData fd) {
+        return null;
     }
 
-    public static void onFinishedReturn(Object ret, FrameData fd, int i) {
-        plugins[i].getListener().onFinishedReturn(ret, fd);
+    @Override
+    public void onFinishedReturn(Object ret, FrameData fd) {
     }
 
-    public static void onFinishedThrowable(Throwable th, FrameData fd, int i) {
-        plugins[i].getListener().onFinishedThrowable(th, fd);
+    @Override
+    public void onFinishedThrowable(Throwable th, FrameData fd) {
     }
 
-    public static void onBeforeThrown(Throwable th, FrameData fd, int i) {
-        plugins[i].getListener().onBeforeThrown(th, fd);
+    @Override
+    public void onBeforeThrown(Throwable th, FrameData fd) {
     }
 }

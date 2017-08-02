@@ -13,15 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.spi;
+package org.brutusin.bctrace.spi.impl;
+
+import org.brutusin.bctrace.spi.Filter;
+import java.security.ProtectionDomain;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 /**
+ * A filter that accepts all classes non loaded by the bootstrap class loader
  *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
-public interface BctraceAgent {
+public class NonBootstrapFilter implements Filter {
 
-    void init(String str);
+    @Override
+    public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl) {
+        return cl != Object.class.getClassLoader();
+    }
 
-    Hook[] getHooks();
+    @Override
+    public boolean instrumentMethod(ClassNode classNode, MethodNode mn) {
+        return true;
+    }
 }

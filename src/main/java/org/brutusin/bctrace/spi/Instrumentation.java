@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.instrumentation.spi;
+package org.brutusin.bctrace.spi;
 
 import java.lang.instrument.UnmodifiableClassException;
 
 /**
- * Offers retransformation capabilities to the plugins. The framework passes a
- * unique instance of this class to the plugins though their
- * {@link Plugin#init(String, Instrumentation) init(String, Instrumentation)}
- * method.s
+ * Offers retransformation capabilities to the hooks. The framework passes a
+ * unique instance of this class to the hook though their initialization method.
  *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
@@ -52,20 +50,11 @@ public interface Instrumentation {
     Class[] getAllLoadedClasses();
 
     /**
-     * Returns an array of all classes currently loaded by the JVM, able to be
-     * retransformed.
+     * Returns the names of the classes instrumented with the current hook.
      *
      * @return
      */
-    Class[] getRetransformableClasses();
-
-    /**
-     * Returns the names of the classes that contain method hooks introduced by
-     * the current plugin.
-     *
-     * @return
-     */
-    String[] getTransformedClasses();
+    Class[] getTransformedClasses();
 
     /**
      * Retransforms the classes.
@@ -76,4 +65,5 @@ public interface Instrumentation {
      * @throws UnmodifiableClassException
      */
     void retransformClasses(Class<?>... classes) throws UnmodifiableClassException;
+
 }
