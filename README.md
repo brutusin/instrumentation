@@ -1,24 +1,24 @@
-# org.brutusin:instrumentation [![Build Status](https://api.travis-ci.org/brutusin/instrumentation.svg?branch=master)](https://travis-ci.org/brutusin/instrumentation) [![Maven Central Latest Version](https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/)
+# org.brutusin:bctrace  [![Build Status](https://api.travis-ci.org/brutusin/instrumentation.svg?branch=master)](https://travis-ci.org/brutusin/instrumentation) [![Maven Central Latest Version](https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/)
+
 An extensible java agent framework that instruments programs running on the JVM (modifying the bytecode at class loading time), with the purpose of capturing method invocation events (start, finish, errors ...) and notifying custom listeners.
 
 **Table of Contents**
-- [org.brutusin:instrumentation](#orgbrutusininstrumentation)
+- [org.brutusin:bctrace](#orgbrutusinbctrace)
   - [How it works](#how-it-works)
-  - [Maven dependency](#maven-dependency)
-  - [Example](#example)
-    - [Implementation](#implementation)
-    - [Packaging](#packaging)
-    - [JRE launching](#jre-launching)
-    - [Main stack](#main-stack)
-    - [Brutusin dependent modules](#brutusin-dependent-modules)
-    - [Support, bugs and requests](#support-bugs-and-requests)
-    - [Authors](#authors)
-    - [License](#license)
+  - [Usage](#usage)
+  - [Registering hooks](#registering-hooks)
+  - [API](#api)
+  - [Maven dependencies](#maven-dependencies)
+  - [Authors](#authors)
+  - [License](#license)
 	
 ## How it works
-The [java instrumentation package](http://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html) introduced in JDK1.5, provides a simple way to transform java-class definition at loading time, consisting basically in a `byte[]` to `byte[]` transformation, by the so called "java agents".
+The [java instrumentation package](http://docs.oracle.com/javase/6/docs/api/java/lang/instrument/package-summary.html) introduced in Java version 1.5, provides a simple way to transform java-class definition at loading time, consisting basically in a `byte[]` to `byte[]` transformation, by the so called "java agents".
 
-This module provides an agent ([org.brutusin.instrumentation.Agent](src/main/java/org/brutusin/instrumentation/Agent.java)) that creates an execution listener instance (from the name of a concrete class extending [org.brutusin.instrumentation.Interceptor](src/main/java/org/brutusin/instrumentation/Interceptor.java) passed from the JVM agent arguments) and, making use of the [ASM library](http://asm.ow2.org/), introduces a series of instructions in the method definitions of the classes to be loaded (classes and methods can be skipped) to notify these execution events to the listener.
+Since Java version 1.6 these agents can perform also perform dynamic instrumentation, that is retransforming the bytecode of classes already loaded. 
+
+This library provides an configurable agent ([org.brutusin.btrace.Init](src/main/java/org/brutusin/bctrace/Init.java)) aimed at injecting custom [hooks](src/main/java/org/brutusin/bctrace/spi/Hook.java) into the code of the specified methods of the target application.
+
 
 From a simplified point of view, the dynamic transformation turns a method like this: 
 ```java
@@ -41,78 +41,57 @@ public Object foo(Object bar){
     }
 }
 ```
+## Usage
+Agent projects making use of this library must create a **fat-jar** including all their dependencies. 
+Agent jars must contain at least this entry in its manifest:
+```
+Premain-Class: org.brutusin.bctrace.Init
+```
+This fat-jar is the agent jar that will be passed as an argument to the java command:
 
-allowing your custom listener to be notified.
+```
+-javaagent:thefat.jar
+```
+
+## Registering hooks
+On agent bootstrap, a resource called `.bctrace` (if any) is read by the agent classloader (root namespace), where the initial (before class-loading) hook implementation class names are declared.
+
+The agent also offers an API for registering hooks dynamically.
+
+## API
+These are the main types to consider:
+
+### BcTrace
+[`BcTrace`](src/main/java/org/brutusin/bctrace/Bctrace.java) class offers a singleton instance that allows to register/unregister hooks dinamically from code.
+
+### Hook
+[`Hook`](src/main/java/org/brutusin/bctrace/spi/Hook.java) class represents the main abstraction that client projects has to implement. Hooks are registered programatically using the previous API, or statically from the descriptor file (see ["registering hooks"](#registering-hooks)).
+
+Hooks offer two main functionalities: 
+- Filtering information (what methods to instrument)  
+- Event callback (what actions to perform under the execution events ocurred in the intrumented methods)
+
+### Instrumentation
+On hook initialization, the framework passes a unique instance of [`Instrumentation`](https://github.com/ShiftLeftSecurity/instrumentation/blob/master/src/main/java/org/brutusin/bctrace/spi/Instrumentation.java)  to the hook instances, to provide them retransformation capabilities, as well as accounting of the classes affected they are instrumenting.
+
+### MethodRegistry
+[`MethodRegistry`](src/main/java/org/brutusin/bctrace/runtime/MethodRegistry.java) offers a singleton instance that provides O(1) id (int) to/from method translations.
+
+### FrameData
+[`FrameData`](src/main/java/org/brutusin/bctrace/runtime/FrameData.java) objects contain all the information about a execution frame, method, arguments and target object. This object are passed by the framework to the listeners for every execution event.
 
 ## Maven dependency 
 
 ```xml
 <dependency>
     <groupId>org.brutusin</groupId>
-    <artifactId>instrumentation</artifactId>
+    <artifactId>bctrace</artifactId>
 </dependency>
 ```
-Click [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.brutusin%22%20a%3A%22instrumentation%22) to see the latest available version released to the Maven Central Repository.
 
-If you are not using maven and need help you can ask [here](https://github.com/brutusin/instrumentation/issues).
-
-## Example
-*See [logging-instrumentation](https://github.com/brutusin/logging-instrumentation) for a complete working example.*
-### Implementation
-Create the following listener implementation:
-
-```java
-package mypackage;
-
-public class MyInterceptor extends Interceptor {
-
-    @Override
-    public void init(String arg) {
-        System.out.println("Interceptor args: " + arg);
-    }
-
-    @Override
-    public boolean interceptClass(String className, byte[] byteCode) {
-        return true; // all classes can be intrumented
-    }
-
-    @Override
-    public boolean interceptMethod(ClassNode cn, MethodNode mn) {
-        return true; // all methods are instrumented
-    }
-
-    @Override
-    protected void doOnStart(Method m, Object[] arg, String executionId) {
-        System.out.println("doOnStart " + m + " " + executionId);
-    }
-
-    @Override
-    protected void doOnThrowableThrown(Method m, Throwable throwable, String executionId) {
-        System.out.println("doOnThrowableThrown " + m + " " + executionId);
-    }
-
-    @Override
-    protected void doOnThrowableUncatched(Method m, Throwable throwable, String executionId) {
-        System.out.println("doOnThrowableUncatched " + m + " " + executionId);
-    }
-
-    @Override
-    protected void doOnFinish(Method m, Object result, String executionId) {
-        System.out.println("doOnFinish " + m + " " + executionId);
-    }
-}
-```
-### Packaging
-Create a [fat-jar](http://maven.apache.org/plugins/maven-assembly-plugin/descriptor-refs.html#jar-with-dependencies) with the previous class and its dependencies. Add the following attribute to  the manifest of the agent JAR:
-```
-Premain-Class: org.brutusin.instrumentation.Agent
-```
-Suppose this jar to be named `myagent.jar`
-### JRE launching
-Run (at least JRE 1.5) the desired java application with the following JVM options: (suppossing myagent.jar located in the working directory)
-```
--javaagent:myagent.jar=mypackage.MyInterceptor;an_interceptor_optional_parameter
-```
+## Main stack
+This module could not be possible without:
+* [org.ow2.asm:asm-all](http://asm.ow2.org/)
 
 ## Main stack
 This module could not be possible without:

@@ -15,12 +15,8 @@
  */
 package org.brutusin.bctrace;
 
-import java.io.InputStream;
 import java.security.ProtectionDomain;
-import org.apache.commons.io.IOUtils;
-import org.brutusin.bctrace.runtime.Callback;
 import org.brutusin.bctrace.runtime.FrameData;
-import org.brutusin.bctrace.runtime.InstrumentationImpl;
 import org.brutusin.bctrace.spi.Filter;
 import org.brutusin.bctrace.spi.Hook;
 import org.brutusin.bctrace.spi.Listener;
@@ -32,7 +28,28 @@ import org.junit.Test;
  *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
-public class PerformanceTest {
+public class PerformanceTest extends BcTraceTest {
+
+    private static final Hook[] HOOKS = new Hook[]{new Hook() {
+
+        @Override
+        public Filter getFilter() {
+            return new AllFilter();
+        }
+
+        @Override
+        public Listener getListener() {
+            return new VoidListener() {
+                @Override
+                public Object onStart(FrameData fd) {
+                    if (((Long) fd.args[0]) % 2 == 0) {
+                        System.nanoTime();
+                    }
+                    return null;
+                }
+            };
+        }
+    }};
 
     @Test
     public void testMinimimOverheadPrimitive() throws Exception {
@@ -45,7 +62,7 @@ public class PerformanceTest {
         }
         long normalElapse = (System.nanoTime() - nano) / times;
 
-        Class clazz = getInstrumentClass(TestClass.class);
+        Class clazz = getInstrumentClass(TestClass.class, HOOKS);
         nano = System.nanoTime();
         for (int i = 0; i < times; i++) {
             clazz.getMethod("fact", long.class).invoke(null, stackDepth);
@@ -67,7 +84,7 @@ public class PerformanceTest {
         }
         long normalElapse = (System.nanoTime() - nano) / times;
 
-        Class clazz = getInstrumentClass(TestClass.class);
+        Class clazz = getInstrumentClass(TestClass.class, HOOKS);
         nano = System.nanoTime();
         for (int i = 0; i < times; i++) {
             clazz.getMethod("factWrapper", Long.class).invoke(null, stackDepth);
@@ -77,50 +94,5 @@ public class PerformanceTest {
         System.out.println("Normal (wrapper): " + normalElapse / 1e6 + " ms");
         System.out.println("Instrumented (wrapper): " + instrumentedElapse / 1e6 + " ms");
 
-    }
-
-    private static Class getInstrumentClass(Class clazz) throws Exception {
-        String className = clazz.getCanonicalName();
-        String resourceName = className.replace('.', '/') + ".class";
-        InputStream is = clazz.getClassLoader().getResourceAsStream(resourceName);
-        byte[] bytes = IOUtils.toByteArray(is);
-        Hook hook = new Hook() {
-            @Override
-            public Filter getFilter() {
-                return new AllFilter() {
-                    @Override
-                    public boolean instrumentClass(String className, ProtectionDomain protectionDomain, ClassLoader cl) {
-                        return className.contains("TestClass");
-                    }
-                };
-            }
-
-            @Override
-            public Listener getListener() {
-                return new VoidListener() {
-                    @Override
-                    public Object onStart(FrameData fd) {
-//                        if (((Long) fd.args[0]) % 2 == 0) {
-//                            System.nanoTime();
-//                        }
-                        return null;
-                    }
-                };
-            }
-        };
-        hook.init(new InstrumentationImpl(null));
-        Callback.hooks = new Hook[]{hook};
-        Transformer transformer = new Transformer();
-        byte[] newBytes = transformer.transform(clazz.getClassLoader(), className, clazz, clazz.getProtectionDomain(), bytes);
-        // Helper.viewByteCode(newBytes);
-        ByteClassLoader cl = new ByteClassLoader();
-        return cl.loadClass(className, newBytes);
-    }
-
-    static class ByteClassLoader extends ClassLoader {
-
-        public Class<?> loadClass(String name, byte[] byteCode) {
-            return super.defineClass(name, byteCode, 0, byteCode.length);
-        }
     }
 }

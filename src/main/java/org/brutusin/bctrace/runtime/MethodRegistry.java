@@ -51,4 +51,8 @@ public final class MethodRegistry {
         }
         return id;
     }
+
+    public synchronized int size() {
+        return methodArray.size();
+    }
 }

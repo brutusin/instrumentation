@@ -32,13 +32,32 @@ public class TestClass {
             return fact(n - 1) * n;
         }
     }
-    
+
     public static long factWrapper(Long n) {
         if (n == 1) {
             return 1;
         } else {
             return factWrapper(n - 1) * n;
         }
+    }
+
+    public static long throwRuntimeException() {
+        throw new TestRuntimeException("A testing runtime exception");
+    }
+
+    public static long getLong() {
+        return 2;
+    }
+
+    public static int getInt() {
+        return 2;
+    }
+
+    public static Object getObject() {
+        return "2";
+    }
+
+    public static void execVoid() {
     }
 
     public static void main(String[] args) throws Exception {
@@ -48,5 +67,12 @@ public class TestClass {
         InputStream is = clazz.getClassLoader().getResourceAsStream(resourceName);
         byte[] bytes = IOUtils.toByteArray(is);
         Helper.viewByteCode(bytes);
+    }
+
+    public static class TestRuntimeException extends RuntimeException {
+
+        public TestRuntimeException(String message) {
+            super(message);
+        }
     }
 }

@@ -64,7 +64,7 @@ class Transformer implements ClassFileTransformer {
             if (className == null || classfileBuffer == null) {
                 return null;
             }
-            if (className.startsWith("sun/") || className.startsWith("com/sun/") || className.startsWith("javafx/")|| className.startsWith("org/springframework/boot/")) {
+            if (className.startsWith("sun/") || className.startsWith("com/sun/") || className.startsWith("javafx/") || className.startsWith("org/springframework/boot/")) {
                 return null;
             }
             if (className.startsWith("java/lang/ThreadLocal")) {
@@ -142,7 +142,7 @@ class Transformer implements ClassFileTransformer {
     private boolean modifyMethod(ClassNode cn, MethodNode mn, LinkedList<Integer> hooksToUse) {
         int frameDataVarIndex = addTraceStart(cn, mn, hooksToUse);
         addTraceReturn(mn, frameDataVarIndex, hooksToUse);
-//        addTraceThrow();
+        addTraceThrow(mn, frameDataVarIndex, hooksToUse);
 //        addTraceThrowablePassed();
         return true;
     }
@@ -175,11 +175,36 @@ class Transformer implements ClassFileTransformer {
                     "(Lorg/brutusin/bctrace/runtime/FrameData;I)Ljava/lang/Object;", false));
 
             il.add(new InsnNode(Opcodes.POP));
-
         }
-
         mn.instructions.insert(il);
         return mn.maxLocals - 1;
+    }
+
+    private void addTraceThrow(MethodNode mn, int frameDataVarIndex, LinkedList<Integer> hooksToUse) {
+        InsnList il = mn.instructions;
+        Iterator<AbstractInsnNode> it = il.iterator();
+        while (it.hasNext()) {
+            AbstractInsnNode abstractInsnNode = it.next();
+
+            switch (abstractInsnNode.getOpcode()) {
+                case Opcodes.ATHROW:
+                    il.insertBefore(abstractInsnNode, getThrowTraceInstructions(frameDataVarIndex, hooksToUse));
+                    break;
+            }
+        }
+    }
+
+    private InsnList getThrowTraceInstructions(int frameDataVarIndex, LinkedList<Integer> hooksToUse) {
+        InsnList il = new InsnList();
+        for (Integer index : hooksToUse) {
+            il.add(new InsnNode(Opcodes.DUP));
+            il.add(new VarInsnNode(Opcodes.ALOAD, frameDataVarIndex));
+            il.add(TreeInstructions.getPushInstruction(index));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
+                    "org/brutusin/bctrace/runtime/Callback", "onBeforeThrown",
+                    "(Ljava/lang/Throwable;Lorg/brutusin/bctrace/runtime/FrameData;I)V", false));
+        }
+        return il;
     }
 
     /**
