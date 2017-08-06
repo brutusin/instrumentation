@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.brutusin.bctrace.utils;
+package org.brutusin.bctrace.asm.utils;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -24,13 +24,30 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 /**
  *
  * @author Ignacio del Valle Alles idelvall@brutusin.org
  */
-public class TreeInstructions {
+public class ASMUtils {
+
+    public static boolean isAbstract(MethodNode m) {
+        return (m.access & Opcodes.ACC_ABSTRACT) != 0;
+    }
+
+    public static boolean isNative(MethodNode m) {
+        return (m.access & Opcodes.ACC_NATIVE) != 0;
+    }
+
+    public static boolean isStatic(MethodNode m) {
+        return (m.access & Opcodes.ACC_STATIC) != 0;
+    }
+
+    public static boolean isPublic(MethodNode m) {
+        return (m.access & Opcodes.ACC_PUBLIC) != 0;
+    }
 
     public static VarInsnNode getLoadInst(Type type, int position) {
         int opCode = -1;

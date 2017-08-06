@@ -15,6 +15,7 @@
  */
 package org.brutusin.bctrace;
 
+import org.brutusin.bctrace.asm.Transformer;
 import java.lang.instrument.UnmodifiableClassException;
 import java.util.ArrayList;
 import java.util.Collections;

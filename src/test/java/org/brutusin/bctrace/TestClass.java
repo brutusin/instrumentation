@@ -17,7 +17,6 @@ package org.brutusin.bctrace;
 
 import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
-import org.brutusin.bctrace.utils.Helper;
 
 /**
  *
@@ -66,7 +65,7 @@ public class TestClass {
         String resourceName = className.replace('.', '/') + ".class";
         InputStream is = clazz.getClassLoader().getResourceAsStream(resourceName);
         byte[] bytes = IOUtils.toByteArray(is);
-        Helper.viewByteCode(bytes);
+        BcTraceTest.viewByteCode(bytes);
     }
 
     public static class TestRuntimeException extends RuntimeException {

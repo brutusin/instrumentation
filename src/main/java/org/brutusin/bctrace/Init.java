@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 import org.brutusin.bctrace.spi.Hook;
 
 /**
