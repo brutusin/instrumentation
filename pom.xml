@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.brutusin</groupId>
     <artifactId>bctrace</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Extensible java agent framework to instrument programs running on the JVM</description>
     <url>https://github.com/brutusin/instrumentation</url>
@@ -30,7 +30,7 @@
         <url>https://github.com/brutusin/bctrace</url>
         <connection>scm:git:https://github.com/brutusin/instrumentation.git</connection>
         <developerConnection>scm:git:https://github.com/brutusin/instrumentation.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v2.0.0</tag>
     </scm>
     
     <dependencies>
