@@ -21,6 +21,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.LinkedList;
 import java.util.List;
+import org.brutusin.bctrace.asm.helper.CatchHelper;
 import org.brutusin.bctrace.asm.helper.ReturnHelper;
 import org.brutusin.bctrace.asm.helper.StartHelper;
 import org.brutusin.bctrace.asm.helper.ThrowHelper;
@@ -30,6 +31,7 @@ import org.brutusin.bctrace.spi.Hook;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -111,7 +113,6 @@ public class Transformer implements ClassFileTransformer {
             if (ASMUtils.isAbstract(mn) || ASMUtils.isNative(mn)) {
                 continue;
             }
-
             LinkedList<Integer> hooksToUse = new LinkedList<Integer>();
             Hook[] hooks = Callback.hooks;
             for (Integer i : matchingHooks) {
@@ -128,12 +129,12 @@ public class Transformer implements ClassFileTransformer {
         return transformed;
     }
 
-    private boolean modifyMethod(ClassNode cn, MethodNode mn, LinkedList<Integer> hooksToUse) {
+    private void modifyMethod(ClassNode cn, MethodNode mn, LinkedList<Integer> hooksToUse) {
+        LabelNode startNode = CatchHelper.insertStartNode(mn);
         int frameDataVarIndex = StartHelper.addTraceStart(cn, mn, hooksToUse);
         ReturnHelper.addTraceReturn(mn, frameDataVarIndex, hooksToUse);
         ThrowHelper.addTraceThrow(mn, frameDataVarIndex, hooksToUse);
-//        addTraceThrowablePassed();
-        return true;
+        CatchHelper.addTraceThrowableUncaught(mn, startNode, frameDataVarIndex, hooksToUse);
     }
 
 }

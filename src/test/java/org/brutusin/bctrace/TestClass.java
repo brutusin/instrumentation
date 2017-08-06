@@ -40,8 +40,15 @@ public class TestClass {
         }
     }
 
-    public static long throwRuntimeException() {
+    public static void throwRuntimeException() {
         throw new TestRuntimeException("A testing runtime exception");
+    }
+
+    public static long getLongWithConditionalException(boolean throwException) {
+        if (throwException) {
+            throwRuntimeException();
+        }
+        return 1;
     }
 
     public static long getLong() {
