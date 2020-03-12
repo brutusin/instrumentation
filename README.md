@@ -1,3 +1,5 @@
+> Check out https://github.com/ShiftLeftSecurity/bctrace instead. A more mature and stable evolution of this project
+
 # org.brutusin:instrumentation [![Build Status](https://api.travis-ci.org/brutusin/instrumentation.svg?branch=master)](https://travis-ci.org/brutusin/instrumentation) [![Maven Central Latest Version](https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.brutusin/instrumentation/)
 An extensible java agent framework that instruments programs running on the JVM (modifying the bytecode at class loading time), with the purpose of capturing method invocation events (start, finish, errors ...) and notifying custom listeners.
 
